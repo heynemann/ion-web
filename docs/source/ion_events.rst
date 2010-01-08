@@ -1,7 +1,7 @@
 Ion Event Bus
 ===============
 
-Ion features an event bus that allows advanced users to plug into the CI server lifecycle.
+Ion features an event bus that allows advanced users to plug into the web server lifecycle.
 
 Usually that's required in plug-ins or for custom initialization of Ion.
 
@@ -9,8 +9,10 @@ Usually that's required in plug-ins or for custom initialization of Ion.
 Ion events
 ------------
 
-on_before_server_start
-----------------------
+Before Server Start
+-------------------
+
+Key: on_before_server_start
 
 This event is fired right before Ion's server infrastructure kicks in. This is a good oportunity to mess with settings, plugins and anything else you need to change before the server goes up.
 
@@ -24,8 +26,10 @@ To subscribe::
 
     server.subscribe('on_before_server_start', on_before_server_start_handler)
 
-on_after_server_start
-----------------------
+After Server Start
+------------------
+
+Key: on_after_server_start
 
 This event is fired right after Ion's server is started.
 
@@ -39,8 +43,8 @@ To subscribe::
 
     server.subscribe('on_after_server_start', on_after_server_start_handler)
 
-on_before_server_stop
----------------------
+Before Server Stop
+------------------
 
 This event is fired right before Ion's server stops.
 
@@ -54,8 +58,10 @@ To subscribe::
 
     server.subscribe('on_before_server_stop', on_before_server_stop_handler)
 
-on_after_server_stop
---------------------
+After Server Stop
+-----------------
+
+Key: on_after_server_stop
 
 This event is fired right after Ion's server is stopped.
 
@@ -69,8 +75,10 @@ To subscribe::
 
     server.subscribe('on_after_server_stop', on_after_server_stop_handler)
 
-on_before_user_authentication
------------------------------
+Before User Authentication
+--------------------------
+
+Key: on_before_user_authentication
 
 This event is fired right before an user gets authenticated for an action that demands authentication.
 
@@ -84,8 +92,10 @@ To subscribe::
 
     server.subscribe('on_before_user_authentication', on_before_user_authentication_handler)
 
-on_user_authentication_successful
----------------------------------
+User Authentication Succeed
+---------------------------
+
+Key: on_user_authentication_successful
 
 This event is fired when an user is already authenticated. This does not mean that the user is authenticating now, only that Ion could find the Controller.user property with some value other than *None*.
 
@@ -100,8 +110,10 @@ To subscribe::
     server.subscribe('on_user_authentication_successful', on_user_authentication_successful_handler)
 
 
-on_user_authentication_failed
------------------------------
+User Authentication Failed
+--------------------------
+
+Key: on_user_authentication_failed
 
 This event is fired when an user is not authenticated and the current action demands that he/she identifies him/herself. This is the best place to redirect the user to a login page.
 

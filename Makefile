@@ -58,7 +58,7 @@ run_functional: compile
 	@echo "Running run_functional tests..."
 	@if [ "$(nocoverage)" = "true" ]; then nosetests -s --verbose ${functional_tests_dir}; else nosetests -s --verbose --with-coverage --cover-package=ion --cover-erase --cover-inclusive ${functional_tests_dir}; fi
 
-documentation:
+doc:
 	cd docs && make html
 	firefox `pwd`/docs/build/html/index.html &
 
