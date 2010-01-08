@@ -20,7 +20,9 @@ nocoverage=false
 
 prepare_build: clean
 
-test: prepare_build compile run_unit run_functional run_acceptance
+test: prepare_build compile
+	@echo "Running tests..."
+	@if [ "$(nocoverage)" = "true" ]; then nosetests -d -s --verbose ${tests_dir}; else nosetests -d -s --verbose --with-coverage --cover-package=ion --cover-erase --cover-inclusive ${tests_dir}; fi
 
 all: prepare_build compile test report_success
 
@@ -30,10 +32,6 @@ acceptance: prepare_build compile run_acceptance report_success
 
 clean:
 	@find -name *.pyc -delete
-
-kill:
-	-@ps aux | egrep skink | egrep -v egrep | awk {'print $$2'} | xargs kill -9
-	@echo "Skink killed!"
 
 # action targets
 
