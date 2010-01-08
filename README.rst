@@ -21,14 +21,58 @@ Why use Ion?
 ------------
 Why yet another Web Framework?
 
-We also added some cool stuff of our own. Ion features a VERY simple yet featureful controller. This means that you have Routes, Authentication, Event Bus and a lot more at your disposal, any time you need those. Let me show a controller sample::
+We also added some cool stuff of our own. Ion features a VERY simple yet featureful controller. This means that you have Routes, Authentication, Event Bus and a lot more at your disposal, any time you need those. 
+
+So we'll just start hacking our first controller and template and...
+
+*WAIT ONE MINUTE RIGHT THERE! No tests??? What the hell do you think you are doing, sir?*
+
+Ok, ok. Calm down, jeez! I'll write the test first. I was going to do it anyway! *yeah, right!*
+
+Let's write a test for our action. Let's start with a unit (unwired) test::
+
+    #I'll use Fudge to mock stuff since I'm doing that in Ion's codebase
+
+    render_template = Fake(callable=True).with_args('some_action.html', some="args").returns('Hello World args')
+
+    @with_patched_object(controllers.IndexController, "render_template", custom_render_template)
+    @with_patched_object(controllers.IndexController, "store", fake_store)
+    @with_fakes
+    def test_some_action():
+        ctrl = TestController()
+        result = ctrl.some_action()
+
+        assert result == "Hello World args"
+
+I'll write a functional (wired) test now, just in case you get nervous::
+
+    #retrieving root_dir and config files skipped for brevity
+    def test_index_controller_index_action():
+        server = Server(root_dir)
+
+        server.start('tests/functional/config.ini', non_block=True)
+
+        while not server.status == ServerStatus.Started:
+            time.sleep(0.5)
+
+        controller = IndexController()
+        controller.server = server
+        controller.context = server.context
+
+        content = controller.some_action()
+
+        assert "Hello World args" in content
+
+Do you think I can write the controller code now? Ok, thank you! Here it goes::
 
     class TestController(Controller):
         @route("/something")
-        def SomeAction(self):
+        def some_action(self):
             return self.render_template("some_action.html", some="args")
 
-This very simple controller creates a route at http://localhost:8082/something that renders a template called some_action.html with the "some" parameter with value of "args". This means we can use the "some" variable in our template as seen here::
+This very simple controller creates a route at http://localhost:8082/something that renders a template called some_action.html with the "some" parameter with value of "args". This means we can use the "some" variable in our template as seen here:
+
+.. code-block:: html
 
     <html>
         <head>
