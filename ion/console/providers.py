@@ -75,3 +75,15 @@ class RunServerProvider(Provider):
         except KeyboardInterrupt:
             server.stop()
 
+class UnitTestProvider(Provider):
+    def __init__(self):
+        super(UnitTestProvider, self).__init__("unit")
+
+    def execute(self, current_dir, options, args):
+        from nose.core import run
+        from nose.config import Config
+
+        tests_dir = join(current_dir, "tests", "unit")
+
+        run(argv=["-d", "-s", "--verbose", tests_dir])
+
