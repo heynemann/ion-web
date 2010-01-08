@@ -17,11 +17,13 @@
 
 import sys
 import os
+import types
 
 from fudge import Fake, with_fakes, with_patched_object, clear_expectations
 from fudge.inspector import arg
 
 import cherrypy
+from ion import storm_tool
 from ion.storm_tool import *
 
 def test_cherrypy_storm_tool_gets_created():
@@ -195,20 +197,47 @@ response_fake_1 = Fake('response')
 
 @with_fakes
 @with_patched_object(cherrypy, "request", request_fake_10)
-@with_patched_object(cherrypy, "response", request_fake_10)
+@with_patched_object(cherrypy, "response", response_fake_1)
 def test_try_commit_attaches_on_end_request_if_stream_available():
     clear_expectations()
 
-    response_fake.has_attr(stream=True)
+    response_fake_1.has_attr(stream=True)
     request_fake_10.has_attr(hooks=Fake("hooks"))
     request_fake_10.hooks.expects('attach').with_args('on_end_request', do_commit)
 
     try_commit()
 
-#def try_commit():
-#    if cherrypy.response.stream:
-#        cherrypy.request.hooks.attach('on_end_request', do_commit)
-#    else:
-#        if isinstance(cherrypy.response.body, types.GeneratorType):
-#            cherrypy.response.collapse_body()
-#        do_commit()
+response_fake_2 = Fake('response')
+fake_do_commit = Fake(callable=True)
+
+@with_fakes
+@with_patched_object(cherrypy, "response", response_fake_2)
+@with_patched_object(cherrypy, "response", response_fake_2)
+@with_patched_object(storm_tool, "do_commit", fake_do_commit)
+def test_try_commit_calls_do_commit_if_stream_not_available_and_body_is_not_generator():
+    clear_expectations()
+
+    response_fake_2.has_attr(stream=False)
+    response_fake_2.has_attr(body="FAKE_BODY")
+
+    try_commit()
+
+response_fake_3 = Fake('response')
+
+def return_generator():
+    for i in range(10):
+        yield i
+
+@with_fakes
+@with_patched_object(cherrypy, "response", response_fake_3)
+@with_patched_object(storm_tool, "do_commit", fake_do_commit)
+def test_try_commit_collapses_body_if_generator():
+    clear_expectations()
+
+    response_fake_3.has_attr(stream=False)
+    response_fake_3.has_attr(body=return_generator())
+
+    response_fake_3.expects('collapse_body')
+
+    try_commit()
+
