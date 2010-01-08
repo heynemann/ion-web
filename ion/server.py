@@ -96,7 +96,7 @@ class Server(object):
         conf = {
             '/': {
                 'request.dispatch': dispatcher,
-                'tools.staticdir.root': join(self.root_dir, "skink/"),
+                'tools.staticdir.root': self.root_dir,
             },
             '/media': {
                 'tools.staticdir.on': True,

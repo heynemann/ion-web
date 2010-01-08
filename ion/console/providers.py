@@ -19,6 +19,8 @@ import os
 from os.path import join, dirname, abspath, exists
 import shutil
 
+from ion.server import Server
+
 __PROVIDERS__ = []
 __PROVIDERSDICT__ = {}
 
@@ -60,4 +62,16 @@ class CreateProjectProvider(Provider):
             raise ValueError("The choosen path(%s) already exists! Please choose a different name or try another folder.")
 
         self.recursive_copy(new_project_template, to_project_path)
+
+class RunServerProvider(Provider):
+    def __init__(self):
+        super(RunServerProvider, self).__init__("run")
+
+    def execute(self, current_dir, options, args):
+        server = Server(root_dir=current_dir)
+
+        try:
+            server.start("config.ini")
+        except KeyboardInterrupt:
+            server.stop()
 
