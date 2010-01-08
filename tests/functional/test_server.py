@@ -17,7 +17,6 @@
 
 from os.path import abspath, dirname, join
 
-import skink.lib
 import ion.controllers as ctrl
 from ion import Server, ServerStatus, Context
 from ion.controllers import Controller, route

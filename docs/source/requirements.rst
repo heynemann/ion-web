@@ -6,6 +6,7 @@ In order for Ion to work correctly you need to have installed (as in being able 
     * CherryPy 3.1
     * Jinja2
     * Storm
+    * Python Routes
 
 In order to build and run unit tests:
 
