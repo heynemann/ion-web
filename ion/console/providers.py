@@ -18,11 +18,26 @@
 import os
 from os.path import join, dirname, abspath, exists
 import shutil
+import fnmatch
+import glob
+from string import Template
 
 from ion.server import Server
 
 __PROVIDERS__ = []
 __PROVIDERSDICT__ = {}
+
+def locate(pattern, root=os.curdir, recursive=True):
+    root_path = abspath(root)
+
+    if recursive:
+        return_files = []
+        for path, dirs, files in os.walk(root_path):
+            for filename in fnmatch.filter(files, pattern):
+                return_files.append(join(path, filename))
+        return return_files
+    else:
+        return glob(join(root_path, pattern))
 
 class MetaProvider(type):
     def __init__(cls, name, bases, attrs):
@@ -49,6 +64,22 @@ class CreateProjectProvider(Provider):
     def recursive_copy(self, from_path, to_path):
         shutil.copytree(from_path, to_path)
 
+    def replace_tokens(self, path, **kw):
+        for file_name in locate("*.*", root=path):
+            if not os.path.isfile(file_name):
+                continue
+            project_file = open(file_name, 'r')
+            text = project_file.read()
+            project_file.close()
+
+            os.remove(file_name)
+
+            s = Template(text)
+
+            project_file = open(file_name, 'w')
+            project_file.write(s.substitute(**kw))
+            project_file.close()
+
     def execute(self, current_dir, options, args):
         if not args or not args[0]:
             raise ValueError("You need to pass the project name to be created")
@@ -63,6 +94,10 @@ class CreateProjectProvider(Provider):
 
         self.recursive_copy(new_project_template, to_project_path)
 
+        self.replace_tokens(to_project_path, project_name=project_name)
+
+        shutil.move(join(to_project_path, "src"), join(to_project_path, project_name))
+
 class RunServerProvider(Provider):
     def __init__(self):
         super(RunServerProvider, self).__init__("run")
@@ -75,15 +110,39 @@ class RunServerProvider(Provider):
         except KeyboardInterrupt:
             server.stop()
 
+def run_tests_in(path, project_name):
+    from nose.core import run
+    from nose.config import Config
+
+    argv = ["-d", "-s", "--verbose"]
+
+    use_coverage = True
+    try:
+        import coverage
+        argv.append("--with-coverage")
+        argv.append("--cover-erase")
+        argv.append("--cover-package=%s" % project_name)
+        argv.append("--cover-inclusive")
+    except ImportError:
+        pass
+
+    argv.append(path)
+
+    run(argv=argv)
+
 class UnitTestProvider(Provider):
     def __init__(self):
         super(UnitTestProvider, self).__init__("unit")
 
     def execute(self, current_dir, options, args):
-        from nose.core import run
-        from nose.config import Config
-
         tests_dir = join(current_dir, "tests", "unit")
+        run_tests_in(tests_dir, os.path.split(current_dir)[-1])
 
-        run(argv=["-d", "-s", "--verbose", tests_dir])
+class FunctionalTestProvider(Provider):
+    def __init__(self):
+        super(FunctionalTestProvider, self).__init__("func")
+
+    def execute(self, current_dir, options, args):
+        tests_dir = join(current_dir, "tests", "functional")
+        run_tests_in(tests_dir, os.path.split(current_dir)[-1])
 
