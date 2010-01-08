@@ -1,0 +1,12 @@
+*~
+*.pyc
+docs/build
+out.txt
+dist/
+build/
+*report.html
+.coverage
+skinkdb.db
+tests/functional/repo
+ci_tmp/
+skink.egg*
