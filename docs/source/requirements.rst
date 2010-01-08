@@ -13,3 +13,7 @@ In order to build and run unit tests:
     * Nose
     * Python Coverage
 
+In order to build the docs:
+
+    * Sphinx
+
