@@ -190,13 +190,20 @@ def test_do_commit_commits_if_not_rolled_back():
 
     do_commit()
 
-#def do_commit():
-#    try:
-#        if not cherrypy.request.rolledback:
-#            cherrypy.thread_data.store.commit()
-#    except:
-#        cherrypy.thread_data.store.rollback()
-#        cherrypy.log("ROLLBACK - " + format_exc(), "STORM")
+request_fake_10 = Fake('request')
+response_fake_1 = Fake('response')
+
+@with_fakes
+@with_patched_object(cherrypy, "request", request_fake_10)
+@with_patched_object(cherrypy, "response", request_fake_10)
+def test_try_commit_attaches_on_end_request_if_stream_available():
+    clear_expectations()
+
+    response_fake.has_attr(stream=True)
+    request_fake_10.has_attr(hooks=Fake("hooks"))
+    request_fake_10.hooks.expects('attach').with_args('on_end_request', do_commit)
+
+    try_commit()
 
 #def try_commit():
 #    if cherrypy.response.stream:
