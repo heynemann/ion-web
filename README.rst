@@ -36,7 +36,6 @@ Let's write a test for our action. Let's start with a unit (unwired) test::
     render_template = Fake(callable=True).with_args('some_action.html', some="args").returns('Hello World args')
 
     @with_patched_object(controllers.IndexController, "render_template", custom_render_template)
-    @with_patched_object(controllers.IndexController, "store", fake_store)
     @with_fakes
     def test_some_action():
         ctrl = TestController()
