@@ -103,7 +103,12 @@ class RunServerProvider(Provider):
         super(RunServerProvider, self).__init__("run")
 
     def execute(self, current_dir, options, args):
-        server = Server(root_dir=current_dir)
+        ini_files = locate("config.ini", root=current_dir)
+
+        if not ini_files:
+            raise RuntimeError("No files called config.ini were found in the current directory structure")
+
+        server = Server(root_dir=abspath(dirname(ini_files[0])))
 
         try:
             server.start("config.ini")
