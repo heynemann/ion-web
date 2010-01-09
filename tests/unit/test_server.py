@@ -253,11 +253,17 @@ def test_server_test_connection():
 fake_db2 = Fake('db')
 fake_db2.expects('connect').raises(OperationalError("Error"))
 db_engine2 = Fake(callable=True).with_args(None).returns(fake_db2)
+cherrypy_logging_fake = Fake('cherrypy')
 
 @with_fakes
 @with_patched_object(ion.server, "Db", db_engine2)
+@with_patched_object(ion.server, "cherrypy", cherrypy_logging_fake)
 def test_server_logs_error_when_no_connection_can_be_made():
     clear()
+
+    cherrypy_logging_fake.has_attr(log = Fake('logging'))
+    cherrypy_logging_fake.log.expects('error').with_args('''\n\n============================ IMPORTANT ERROR ============================\nNo connection to the database could be made with the supplied parameters.\nPLEASE VERIFY YOUR CONFIG.INI FILE AND CHANGE IT ACCORDINGLY.\n=========================================================================\n\n''', 'STORM')
+
     server = Server(root_dir="some")
     server.context = None
 

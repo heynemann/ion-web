@@ -18,26 +18,13 @@
 import os
 from os.path import join, dirname, abspath, exists
 import shutil
-import fnmatch
-import glob
 from string import Template
 
 from ion.server import Server
+from ion.fs import locate
 
 __PROVIDERS__ = []
 __PROVIDERSDICT__ = {}
-
-def locate(pattern, root=os.curdir, recursive=True):
-    root_path = abspath(root)
-
-    if recursive:
-        return_files = []
-        for path, dirs, files in os.walk(root_path):
-            for filename in fnmatch.filter(files, pattern):
-                return_files.append(join(path, filename))
-        return return_files
-    else:
-        return glob(join(root_path, pattern))
 
 class MetaProvider(type):
     def __init__(cls, name, bases, attrs):
