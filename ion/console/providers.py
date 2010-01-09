@@ -50,7 +50,7 @@ class VersionProvider(Provider):
         super(VersionProvider, self).__init__("version")
 
     def execute(self, current_dir, options, args):
-        print "Ion version %s" % Version
+        print "Ion v%s - http://github.com/heynemann/ion\nCreated by Bernardo Heynemann (heynemann@gmail.com)" % Version
 
 class HelpProvider(Provider):
     def __init__(self):
