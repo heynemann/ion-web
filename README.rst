@@ -69,9 +69,7 @@ Do you think I can write the controller code now? Ok, thank you! Here it goes::
         def some_action(self):
             return self.render_template("some_action.html", some="args")
 
-This very simple controller creates a route at http://localhost:8082/something that renders a template called some_action.html with the "some" parameter with value of "args". This means we can use the "some" variable in our template as seen here:
-
-.. code-block:: html
+This very simple controller creates a route at http://localhost:8082/something that renders a template called some_action.html with the "some" parameter with value of "args". This means we can use the "some" variable in our template as seen here::
 
     <html>
         <head>
