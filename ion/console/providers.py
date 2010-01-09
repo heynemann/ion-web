@@ -44,6 +44,13 @@ class Provider(object):
     def __init__(self, key):
         self.key = key
 
+class HelpProvider(Provider):
+    def __init__(self):
+        super(HelpProvider, self).__init__("help")
+
+    def execute(self, current_dir, options, args):
+        print "Help to be written"
+
 class CreateProjectProvider(Provider):
     def __init__(self):
         super(CreateProjectProvider, self).__init__("create")
@@ -103,9 +110,8 @@ class RunServerProvider(Provider):
             server.stop()
 
 class TestRunnerProvider(Provider):
-    def __init__(self):
-        if not hasattr(self, 'key'):
-            super(TestRunnerProvider, self).__init__("test")
+    def __init__(self, key=None):
+        super(TestRunnerProvider, self).__init__(key or "test")
 
     def run_nose(self, path, project_name):
         from nose.core import run

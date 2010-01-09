@@ -22,19 +22,26 @@ def main():
     (options, args) = parser.parse_args()
 
     if not args:
-        print "Invalid action. for help type skink_console.py -h (--help) for help"
+        print "Invalid action. for help type ion help"
         sys.exit(0)
 
     action = args[0]
 
     providers = Provider.all()
 
+    found_provider = False
+
     for provider_type in providers:
         provider = provider_type()
         if provider.key != action:
             continue
 
+        found_provider = True
+
         provider.execute(abspath(os.curdir), options, args[1:])
+
+    if not found_provider:
+        print "Invalid option. for help type ion help"
 
     sys.exit(0)
 
