@@ -22,6 +22,7 @@ from string import Template
 
 from ion.server import Server
 from ion.fs import locate
+from ion import Version
 
 __PROVIDERS__ = []
 __PROVIDERSDICT__ = {}
@@ -43,6 +44,13 @@ class Provider(object):
 
     def __init__(self, key):
         self.key = key
+
+class VersionProvider(Provider):
+    def __init__(self):
+        super(VersionProvider, self).__init__("version")
+
+    def execute(self, current_dir, options, args):
+        print "Ion version %s" % Version
 
 class HelpProvider(Provider):
     def __init__(self):
