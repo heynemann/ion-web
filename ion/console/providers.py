@@ -115,39 +115,48 @@ class RunServerProvider(Provider):
         except KeyboardInterrupt:
             server.stop()
 
-def run_tests_in(path, project_name):
-    from nose.core import run
-    from nose.config import Config
+class TestRunnerProvider(Provider):
+    def __init__(self):
+        if not hasattr(self, 'key'):
+            super(TestRunnerProvider, self).__init__("test")
 
-    argv = ["-d", "-s", "--verbose"]
+    def run_nose(self, path, project_name):
+        from nose.core import run
+        from nose.config import Config
 
-    use_coverage = True
-    try:
-        import coverage
-        argv.append("--with-coverage")
-        argv.append("--cover-erase")
-        argv.append("--cover-package=%s" % project_name)
-        argv.append("--cover-inclusive")
-    except ImportError:
-        pass
+        argv = ["-d", "-s", "--verbose"]
 
-    argv.append(path)
+        use_coverage = True
+        try:
+            import coverage
+            argv.append("--with-coverage")
+            argv.append("--cover-erase")
+            argv.append("--cover-package=%s" % project_name)
+            argv.append("--cover-inclusive")
+        except ImportError:
+            pass
 
-    run(argv=argv)
+        argv.append(path)
 
-class UnitTestProvider(Provider):
+        run(argv=argv)
+
+    def execute(self, current_dir, options, args):
+        tests_dir = join(current_dir, "tests")
+        self.run_nose(tests_dir, os.path.split(current_dir)[-1])
+
+class UnitTestProvider(TestRunnerProvider):
     def __init__(self):
         super(UnitTestProvider, self).__init__("unit")
 
     def execute(self, current_dir, options, args):
         tests_dir = join(current_dir, "tests", "unit")
-        run_tests_in(tests_dir, os.path.split(current_dir)[-1])
+        self.run_nose(tests_dir, os.path.split(current_dir)[-1])
 
-class FunctionalTestProvider(Provider):
+class FunctionalTestProvider(TestRunnerProvider):
     def __init__(self):
         super(FunctionalTestProvider, self).__init__("func")
 
     def execute(self, current_dir, options, args):
         tests_dir = join(current_dir, "tests", "functional")
-        run_tests_in(tests_dir, os.path.split(current_dir)[-1])
+        self.run_nose(tests_dir, os.path.split(current_dir)[-1])
 

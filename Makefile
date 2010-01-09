@@ -20,15 +20,15 @@ nocoverage=false
 
 prepare_build: clean
 
-test: prepare_build compile
+test: prepare_build
 	@echo "Running tests..."
 	@if [ "$(nocoverage)" = "true" ]; then nosetests -d -s --verbose ${tests_dir}; else nosetests -d -s --verbose --with-coverage --cover-package=ion --cover-erase --cover-inclusive ${tests_dir}; fi
 
-all: prepare_build compile test report_success
+all: prepare_build test report_success
 
-unit: prepare_build compile run_unit report_success
-functional: prepare_build compile run_functional report_success
-acceptance: prepare_build compile run_acceptance report_success
+unit: prepare_build run_unit report_success
+functional: prepare_build run_functional report_success
+acceptance: prepare_build run_acceptance report_success
 
 clean:
 	@find -name *.pyc -delete
@@ -44,15 +44,11 @@ upgradedb:
 report_success:
 	@echo "Build succeeded!"
 
-compile:
-	@echo "Compiling source code..."
-	@python -m compileall ${src_dir}
-
-run_unit: compile
+run_unit:
 	@echo "Running run_unit tests..."
 	@if [ "$(nocoverage)" = "true" ]; then nosetests -d -s --verbose ${unit_tests_dir}; else nosetests -d -s --verbose --with-coverage --cover-package=ion --cover-erase --cover-inclusive ${unit_tests_dir}; fi
 
-run_functional: compile
+run_functional:
 	@echo "Running run_functional tests..."
 	@if [ "$(nocoverage)" = "true" ]; then nosetests -s --verbose ${functional_tests_dir}; else nosetests -s --verbose --with-coverage --cover-package=ion --cover-erase --cover-inclusive ${functional_tests_dir}; fi
 

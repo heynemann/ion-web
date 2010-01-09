@@ -18,6 +18,7 @@
 import sys
 import os
 
+from MySQLdb import OperationalError
 from fudge import Fake, with_fakes, with_patched_object, clear_expectations
 from fudge.inspector import arg
 
@@ -144,7 +145,7 @@ def test_get_mounts():
     expected = {
             '/': {
                 'request.dispatch': "dispatcher",
-                'tools.staticdir.root': "some/skink/",
+                'tools.staticdir.root': "some",
             },
             '/media': {
                 'tools.staticdir.on': True,
@@ -250,6 +251,19 @@ def test_server_test_connection():
     server.test_connection()
 
 fake_db2 = Fake('db')
+fake_db2.expects('connect').raises(OperationalError("Error"))
+db_engine2 = Fake(callable=True).with_args(None).returns(fake_db2)
+
+@with_fakes
+@with_patched_object(ion.server, "Db", db_engine2)
+def test_server_logs_error_when_no_connection_can_be_made():
+    clear()
+    server = Server(root_dir="some")
+    server.context = None
+
+    server.test_connection()
+
+fake_db2 = Fake('db')
 fake_db2.expects('connect')
 fake_db2.has_attr(store="store")
 db_engine2 = Fake(callable=True).with_args(None).returns(fake_db2)
@@ -313,4 +327,5 @@ def test_server_imports_controllers():
     server = Server(root_dir="some", context=import_context2)
 
     server.import_controllers()
+
 
