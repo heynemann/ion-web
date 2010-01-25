@@ -112,7 +112,7 @@ def test_server_start_calls_run_server():
 
 settings_context = Fake('context').has_attr(settings=Fake('settings'))
 settings_context.settings.has_attr(Ion=Fake('ion'))
-settings_context.settings.Ion.has_attr(host="somehost", port="4728", baseurl="http://some.url:4728", verbose="True")
+settings_context.settings.Ion.has_attr(host="somehost", port="4728", baseurl="http://some.url:4728", verbose="True", media_path="other")
 def test_get_server_settings():
     clear()
     server = Server(root_dir="some", context=settings_context)
@@ -137,6 +137,30 @@ def test_get_server_settings():
 def test_get_mounts():
     clear()
     server = Server(root_dir="some", context=settings_context)
+
+    mounts = server.get_mounts("dispatcher")
+
+    assert mounts
+
+    expected = {
+            '/': {
+                'request.dispatch': "dispatcher",
+                'tools.staticdir.root': "some",
+            },
+            '/media': {
+                'tools.staticdir.on': True,
+                'tools.staticdir.dir': 'other'
+            }
+        }
+
+    assert mounts == expected
+
+alternate_context = Fake('context').has_attr(settings=Fake('settings'))
+alternate_context.settings.has_attr(Ion=Fake('ion'))
+alternate_context.settings.Ion.has_attr(host="somehost", port="4728", baseurl="http://some.url:4728", verbose="True", media_path="")
+def test_get_mounts_without_specific_media_path():
+    clear()
+    server = Server(root_dir="some", context=alternate_context)
 
     mounts = server.get_mounts("dispatcher")
 

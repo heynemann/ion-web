@@ -17,7 +17,7 @@
 
 import sys
 import os
-from os.path import join, abspath, dirname, splitext
+from os.path import join, abspath, dirname, splitext, split
 
 import cherrypy
 from cherrypy import thread_data
@@ -93,14 +93,26 @@ class Server(object):
                }
 
     def get_mounts(self, dispatcher):
+        sets = self.context.settings
+        media_path = sets.Ion.media_path
+
+        if not media_path:
+            media_dir = "media"
+            media_path = self.root_dir
+        else:
+            #REFACTOR
+            paths = split(media_path)
+            media_dir = paths[-1]
+            media_path = join(self.root_dir, join(*paths[:-1]).lstrip("/")).rstrip("/")
+
         conf = {
             '/': {
                 'request.dispatch': dispatcher,
-                'tools.staticdir.root': self.root_dir,
+                'tools.staticdir.root': media_path,
             },
             '/media': {
                 'tools.staticdir.on': True,
-                'tools.staticdir.dir': 'media'
+                'tools.staticdir.dir': media_dir
             }
         }
 
