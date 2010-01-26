@@ -89,6 +89,10 @@ default_context = Fake('context').has_attr(bus=Fake('bus'))
 default_context.bus.expects('publish').with_args("on_before_server_start", arg.any_value())
 default_context.bus.next_call(for_method='publish').with_args("on_after_server_start", arg.any_value())
 default_context.expects('load_settings').with_args(arg.endswith('/some/config.ini'))
+default_context.has_attr(settings=Fake('settings'))
+default_context.settings.has_attr(Ion=Fake('ion'), Db=Fake('db'))
+default_context.settings.Ion.expects('as_bool').with_args('debug').returns(False)
+default_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="10", database="database")
 
 @with_fakes
 @with_patched_object(Server, "run_server", custom_run_server)
@@ -293,18 +297,21 @@ def test_server_logs_error_when_no_connection_can_be_made():
 
     server.test_connection()
 
-fake_db2 = Fake('db')
-fake_db2.expects('connect')
-fake_db2.has_attr(store="store")
-db_engine2 = Fake(callable=True).with_args(None).returns(fake_db2)
 fake_thread_data = Fake('thread_data')
+fake_cherrypy = Fake('cherrypy').has_attr(thread_data=fake_thread_data)
+
+fake_database = Fake('database')
+fake_create_database = Fake(callable=True).with_args("protocol://user:password@host:10/database").returns(fake_database)
+
+fake_store = Fake(callable=True).with_args(fake_database).returns("store")
+
 @with_fakes
-@with_patched_object(ion.server, "Db", db_engine2)
-@with_patched_object(ion.server, "thread_data", fake_thread_data)
+@with_patched_object(ion.server, "cherrypy", fake_cherrypy)
+@with_patched_object(ion.server, "create_database", fake_create_database)
+@with_patched_object(ion.server, "Store", fake_store)
 def test_server_connect_db():
     clear_expectations()
-    server = Server(root_dir="some")
-    server.context = None
+    server = Server(root_dir="some", context=default_context)
 
     server.connect_db(1)
 
