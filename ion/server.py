@@ -43,6 +43,12 @@ class Server(object):
         self.context = context or Context(root_dir=root_dir)
         self.storm_stores = {}
 
+    @property
+    def template_path(self):
+        templ_path = self.context.settings.Ion.template_path.lstrip("/")
+        templ_path = templ_path and abspath(join(self.root_dir, templ_path)) or abspath(join(self.root_dir, 'templates'))
+        return templ_path
+
     def start(self, config_path, non_block=False):
         self.status = ServerStatus.Starting
         self.publish('on_before_server_start', {'server':self, 'context':self.context})
@@ -135,16 +141,19 @@ class Server(object):
         return dispatcher
 
     def run_server(self, non_block=False):
-        cherrypy.engine.subscribe('start_thread', self.connect_db)
-        cherrypy.engine.subscribe('stop_thread', self.disconnect_db)
-
         cherrypy.config.update(self.get_server_settings())
         dispatcher = self.get_dispatcher()
         mounts = self.get_mounts(dispatcher)
 
         self.app = cherrypy.tree.mount(None, config=mounts)
 
-        self.test_connection()
+        self.context.use_db = self.test_connection()
+
+        if self.context.use_db:
+            cherrypy.engine.subscribe('start_thread', self.connect_db)
+            cherrypy.engine.subscribe('stop_thread', self.disconnect_db)
+        else:
+            cherrypy.config.update({'tools.storm.on': False})
 
         cherrypy.engine.start()
         if not non_block:
@@ -157,6 +166,7 @@ class Server(object):
             self.db = Db(self.context)
             self.db.connect()
             self.db.disconnect()
+            return True
         except OperationalError:
             message = ['', '']
             message.append("============================ IMPORTANT ERROR ============================")
@@ -166,6 +176,8 @@ class Server(object):
             message.append('')
             message.append('')
             cherrypy.log.error("\n".join(message), "STORM")
+
+        return False
 
     def subscribe(self, subject, handler):
         self.context.bus.subscribe(subject, handler)

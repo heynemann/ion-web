@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 import os
 from os.path import join, dirname, abspath, exists
 import shutil
@@ -110,7 +111,12 @@ class RunServerProvider(Provider):
         if not ini_files:
             raise RuntimeError("No files called config.ini were found in the current directory structure")
 
-        server = Server(root_dir=abspath(dirname(ini_files[0])))
+        root_dir = abspath(dirname(ini_files[0]))
+
+        sys.path.append(os.curdir)
+        sys.path.append(root_dir)
+
+        server = Server(root_dir=root_dir)
 
         try:
             server.start("config.ini")

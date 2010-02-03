@@ -123,8 +123,7 @@ class Controller(object):
             dispatcher.connect(route_name, route[1]["route"], controller=self, action=route[1]["method"])
 
     def render_template(self, template_file, **kw):
-        template_path = self.context.settings.Ion.template_path.lstrip("/")
-        template_path = template_path and abspath(join(self.server.root_dir, template_path)) or abspath(join(self.server.root_dir, 'templates'))
+        template_path = self.server.template_path
 
         env = Environment(loader=FileSystemLoader(template_path))
 
