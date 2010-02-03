@@ -32,7 +32,7 @@ def clear():
     ctrl.__CONTROLLERSDICT__ = {}
 
 fake_import_controllers = Fake(callable=True)
-fake_test_db = Fake(callable=True)
+fake_test_db = Fake(callable=True).returns(True)
 custom_run_server = Fake(callable=True)
 
 def test_server_status_statuses():
