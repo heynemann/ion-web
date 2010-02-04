@@ -89,7 +89,7 @@ class CreateProjectProvider(Provider):
         to_project_path = abspath(join(current_dir, project_name))
 
         if exists(to_project_path):
-            raise ValueError("The choosen path(%s) already exists! Please choose a different name or try another folder.")
+            raise ValueError("The choosen path(%s) already exists! Please choose a different name or try another folder." % to_project_path)
 
         recursive_copy(new_project_template, to_project_path)
 

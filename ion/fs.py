@@ -35,26 +35,26 @@ def locate(*args, **kw):
                 return_files.append(join(path, filename))
     return return_files
 
-def recursive_copy(self, from_path, to_path):
+def recursive_copy(from_path, to_path):
     shutil.copytree(from_path, to_path)
 
-def move_dir(self, from_path, to_path):
+def move_dir(from_path, to_path):
     shutil.move(from_path, to_path)
 
-def read_all_file(self, path):
+def read_all_file(path):
     project_file = open(path, 'r')
     text = project_file.read()
     project_file.close()
 
     return text
 
-def replace_file_contents(self, path, contents):
+def replace_file_contents(path, contents):
     project_file = open(path, 'w')
     project_file.write(contents)
     project_file.close()
 
-def remove_file(self, path):
+def remove_file(path):
     os.remove(path)
 
-def is_file(self, path):
-    return os.path.is_file(path)
+def is_file(path):
+    return os.path.isfile(path)
