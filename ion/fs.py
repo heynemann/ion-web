@@ -16,11 +16,13 @@
 # limitations under the License.
 
 import os
-from os.path import join, dirname, abspath, exists
-from os import walk
+from os.path import join, dirname, abspath, exists, isfile
+from os import walk, remove
 
 import fnmatch
 import shutil
+
+open_file = open
 
 #should be called like: locate('*.txt', '*.py', '*.acc', root=path)
 def locate(*args, **kw):
@@ -42,19 +44,20 @@ def move_dir(from_path, to_path):
     shutil.move(from_path, to_path)
 
 def read_all_file(path):
-    project_file = open(path, 'r')
+    project_file = open_file(path, 'r')
     text = project_file.read()
     project_file.close()
 
     return text
 
 def replace_file_contents(path, contents):
-    project_file = open(path, 'w')
+    project_file = open_file(path, 'w')
     project_file.write(contents)
     project_file.close()
 
 def remove_file(path):
-    os.remove(path)
+    remove(path)
 
 def is_file(path):
-    return os.path.isfile(path)
+    return isfile(path)
+

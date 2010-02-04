@@ -42,3 +42,66 @@ def test_locate_returns_list_when_files_found_in_recursive_mode():
     result = fs.locate('test')
 
     assert result == ['./test']
+
+fake_shutil_1 = Fake("shutil")
+@with_fakes
+@with_patched_object(fs, 'shutil', fake_shutil_1)
+def test_recursive_copy():
+    clear_expectations()
+
+    fake_shutil_1.expects('copytree').with_args("a", "b")
+
+    fs.recursive_copy("a","b")
+
+@with_fakes
+@with_patched_object(fs, 'shutil', fake_shutil_1)
+def test_move_dir():
+    clear_expectations()
+
+    fake_shutil_1.expects('move').with_args("a", "b")
+
+    fs.move_dir("a","b")
+
+fake_file_1 = Fake('file')
+fake_open_1 = Fake(callable=True).with_args("a", "r").returns(fake_file_1)
+@with_fakes
+@with_patched_object(fs, 'open_file', fake_open_1)
+def test_read_all_text():
+    clear_expectations()
+
+    fake_file_1.expects('read').returns('some text')
+    fake_file_1.expects('close')
+
+    text = fs.read_all_file("a")
+
+    assert text == "some text"
+
+fake_file_2 = Fake('file')
+fake_open_2 = Fake(callable=True).with_args("a", "w").returns(fake_file_2)
+@with_fakes
+@with_patched_object(fs, 'open_file', fake_open_2)
+def test_replace_file_contents():
+    clear_expectations()
+
+    fake_file_2.expects('write').with_args('text to write')
+    fake_file_2.expects('close')
+
+    fs.replace_file_contents("a", "text to write")
+
+fake_remove_1 = Fake(callable=True).with_args("a")
+@with_fakes
+@with_patched_object(fs, 'remove', fake_remove_1)
+def test_remove_file():
+    clear_expectations()
+
+    fs.remove_file("a")
+
+fake_is_file_1 = Fake(callable=True).with_args("a").returns(True)
+@with_fakes
+@with_patched_object(fs, 'isfile', fake_is_file_1)
+def test_is_file():
+    clear_expectations()
+
+    assert fs.is_file("a")
+
+

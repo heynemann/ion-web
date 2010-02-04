@@ -162,3 +162,23 @@ def test_create_project_provider_raises_when_directory_already_exists():
 
     teardown()
 
+fake_exists_2 = Fake(callable=True).with_args(arg.endswith("some_path/some_project")).returns(False)
+recursive_copy_1 = Fake(callable=True).with_args(arg.endswith("ion/console/new_project"), arg.endswith("some_path/some_project"))
+replace_tokens_1 = Fake(callable=True).with_args(arg.endswith("some_path/some_project"), project_name="some_project")
+move_dir_1 = Fake(callable=True).with_args(arg.endswith("some_path/some_project/src"), arg.endswith("some_path/some_project/some_project"))
+@with_fakes
+@with_patched_object(providers, "exists", fake_exists_2)
+@with_patched_object(providers, "recursive_copy", recursive_copy_1)
+@with_patched_object(CreateProjectProvider, "replace_tokens", replace_tokens_1)
+@with_patched_object(providers, "move_dir", move_dir_1)
+def test_create_project_provider_creates_project_structure():
+    setup()
+    clear_expectations()
+
+    prov = CreateProjectProvider()
+
+    prov.execute("some_path", None, ["some_project"])
+
+    teardown()
+
+
