@@ -336,3 +336,32 @@ def test_user_returns_none_when_attribute_error():
 
     assert not ctrl.user
 
+@with_fakes
+def test_logging_does_nothing_if_verbose_is_false():
+    clear_expectations()
+    clear()
+
+    ctrl = Controller()
+    ctrl.context = Fake('context')
+    ctrl.context.has_attr(settings=Fake('settings'))
+    ctrl.context.settings.has_attr(Ion=Fake('Ion'))
+    ctrl.context.settings.Ion.expects('as_bool').with_args('verbose').returns(False)
+
+    ctrl.log('bla')
+
+fake_cherrypy7 = Fake('cherrypy')
+fake_cherrypy7.expects("log")
+@with_fakes
+@with_patched_object(ctrl, "cherrypy", fake_cherrypy7)
+def test_logging_calls_cherrypy_log_if_verbose_is_true():
+    clear_expectations()
+    clear()
+
+    ctrl = Controller()
+    ctrl.context = Fake('context')
+    ctrl.context.has_attr(settings=Fake('settings'))
+    ctrl.context.settings.has_attr(Ion=Fake('Ion'))
+    ctrl.context.settings.Ion.expects('as_bool').with_args('verbose').returns(True)
+
+    ctrl.log('bla')
+
