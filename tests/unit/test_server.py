@@ -61,6 +61,26 @@ def test_server_should_start():
 
     assert server.status == ServerStatus.Started
 
+should_start_context = Fake('context').has_attr(bus=Fake('bus'))
+should_start_context.bus.expects('publish').with_args("on_before_server_start", arg.any_value())
+should_start_context.bus.next_call(for_method='publish').with_args("on_after_server_start", arg.any_value())
+should_start_context.expects('load_settings').with_args(arg.endswith('/some/config.ini'))
+should_start_context.has_attr(settings=Fake('settings'))
+should_start_context.settings.has_attr(Ion=Fake('ion'), Db=Fake('db'))
+should_start_context.settings.Ion.expects('as_bool').with_args('debug').returns(True)
+should_start_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="10", database="database")
+
+@with_fakes
+@with_patched_object(Server, "run_server", custom_run_server)
+@with_patched_object(Server, "import_controllers", fake_import_controllers)
+def test_server_should_start_with_debug():
+    clear_expectations()
+    server = Server(root_dir="some")
+    server.context = should_start_context
+    server.start(config_path="config.ini")
+
+    assert server.status == ServerStatus.Started
+
 def test_server_should_have_context():
     clear_expectations()
     server = Server(root_dir="some")
@@ -248,6 +268,30 @@ def test_run_server_updates_config_and_starts_cherrypy():
     assert server.app
     assert server.app == "app"
 
+test_db_false = Fake(callable=True).returns(False)
+custom_config_2 = Fake('config')
+custom_config_2.expects('update').with_args({"some":"settings"})
+custom_config_2.next_call('update').with_args({"tools.storm.on":False})
+
+@with_fakes
+@with_patched_object("cherrypy", "config", custom_config_2)
+@with_patched_object("cherrypy", "tree", fake_tree)
+@with_patched_object("cherrypy", "engine", fake_engine)
+@with_patched_object(Server, "get_server_settings", fake_get_server_settings)
+@with_patched_object(Server, "get_dispatcher", fake_get_dispatcher)
+@with_patched_object(Server, "get_mounts", fake_get_mounts)
+@with_patched_object(Server, "import_controllers", fake_import_controllers)
+@with_patched_object(Server, "test_connection", test_db_false)
+def test_run_server_updates_config_to_not_use_storm_when_test_db_fails():
+    clear()
+
+    server = Server(root_dir="some", context=None)
+
+    server.run_server()
+
+    assert server.app
+    assert server.app == "app"
+
 stop_context = Fake('context').has_attr(bus=Fake('bus'))
 stop_context.bus.expects('publish').with_args("on_before_server_stop", arg.any_value())
 stop_context.bus.next_call(for_method='publish').with_args("on_after_server_stop", arg.any_value())
@@ -364,5 +408,38 @@ def test_server_imports_controllers():
     server = Server(root_dir="some", context=import_context2)
 
     server.import_controllers()
+
+@with_fakes
+def test_server_template_path_returns_default_path_when_empty_setting():
+    clear()
+    fake_context = Fake('context')
+    server = Server(root_dir="some", context=fake_context)
+    fake_context.has_attr(settings=Fake('settings'))
+    fake_context.settings.has_attr(Ion=Fake('Ion'))
+    fake_context.settings.Ion.has_attr(template_path='')
+
+    assert server.template_path.endswith('some/templates')
+
+@with_fakes
+def test_server_template_path_returns_default_path_when_slash_setting():
+    clear()
+    fake_context = Fake('context')
+    server = Server(root_dir="some", context=fake_context)
+    fake_context.has_attr(settings=Fake('settings'))
+    fake_context.settings.has_attr(Ion=Fake('Ion'))
+    fake_context.settings.Ion.has_attr(template_path='/')
+
+    assert server.template_path.endswith('some/templates')
+
+@with_fakes
+def test_server_template_path_returns_default_path_when_custom_path_setting():
+    clear()
+    fake_context = Fake('context')
+    server = Server(root_dir="some", context=fake_context)
+    fake_context.has_attr(settings=Fake('settings'))
+    fake_context.settings.has_attr(Ion=Fake('Ion'))
+    fake_context.settings.Ion.has_attr(template_path='/some_template_path')
+
+    assert server.template_path.endswith('some/some_template_path')
 
 

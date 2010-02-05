@@ -20,7 +20,7 @@ from fudge import Fake, with_fakes, with_patched_object, clear_expectations
 from fudge.inspector import arg
 
 import ion.settings as sets
-from ion import Settings
+from ion import Settings, SettingsSection
 
 parser = (Fake("ConfigParser").expects("__init__")
                               .expects("read")
@@ -95,4 +95,30 @@ def test_settings_read_attribute_returns_config_read():
     settings.load()
 
     assert settings.SomeSection.SomeAttribute == "attribute_value"
+
+@with_fakes
+def test_settings_read_attribute_as_int():
+    clear_expectations()
+
+    fake_config = Fake('config')
+    fake_config.expects('get').with_args('name', 'setting').returns("10")
+
+    ss = SettingsSection(None, 'name', fake_config)
+    assert ss.as_int('setting') == 10
+
+@with_fakes
+def test_settings_read_attribute_as_bool():
+    clear_expectations()
+
+    fake_config = Fake('config')
+    fake_config.expects('get').with_args('name', 'setting_true_1').returns("True")
+    fake_config.next_call('get').with_args('name', 'setting_true_2').returns("true")
+    fake_config.next_call('get').with_args('name', 'setting_false_1').returns("False")
+    fake_config.next_call('get').with_args('name', 'setting_false_2').returns("false")
+
+    ss = SettingsSection(None, 'name', fake_config)
+    assert ss.as_bool('setting_true_1')
+    assert ss.as_bool('setting_true_2')
+    assert not ss.as_bool('setting_false_1')
+    assert not ss.as_bool('setting_false_2')
 
