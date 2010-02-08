@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from os.path import abspath, join
+from os.path import abspath, join, exists
 
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
@@ -26,6 +26,8 @@ class Settings(object):
 
     def load(self, filename="config.ini"):
         path = abspath(join(self.root_dir, filename))
+        if not exists(path):
+            raise ValueError("The specified path (%s) was not found!" % filename)
 
         self.config = ConfigParser()
         self.config.read(path)
