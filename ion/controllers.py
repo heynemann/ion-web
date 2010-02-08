@@ -134,13 +134,17 @@ class Controller(object):
         return template.render(user=self.user, settings=self.server.context.settings, **kw)
 
     def send_template_by_mail(self, from_email, to_emails, subject, template_file, **kw):
-        template_path = self.server.template_path
+        body = self.render_template(template_file, **kw)
 
-        env = Environment(loader=FileSystemLoader(template_path))
+        exit_code = 1
+        try:
+            exit_code = self.send_using_sendmail(from_email, to_emails, subject, body)
+        except:
+            exit_code = self.send_using_smtp(from_email, to_emails, subject, body)
 
-        template = env.get_template(template_file)
-        body = template.render(user=self.user, settings=self.server.context.settings, **kw)
+        return exit_code
 
+    def send_using_sendmail(self, from_email, to_emails, subject, body):
         SENDMAIL = "/usr/sbin/sendmail" # sendmail location
         p = os.popen("%s -t" % SENDMAIL, "w")
         p.write("From: %s\n" % from_email)
@@ -154,6 +158,9 @@ class Controller(object):
             self.log("Sendmail exit status: %d" % sts)
 
         return sts
+
+    def send_using_smtp(self, from_email, to_emails, subject, body):
+        pass
 
     def redirect(self, url):
         raise cherrypy.HTTPRedirect(url)

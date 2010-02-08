@@ -365,3 +365,59 @@ def test_logging_calls_cherrypy_log_if_verbose_is_true():
 
     ctrl.log('bla')
 
+@with_fakes
+def test_getting_an_unitialized_store_gives_a_proper_message():
+    clear_expectations()
+    clear()
+
+    ctrl = Controller()
+
+    try:
+        store = ctrl.store
+    except ValueError, err:
+        msg = str(err)
+        assert msg == "The current controller does not have a configured store. Did you, by any chance, forgot to pass it to the controller in a test?"
+        return False
+
+    assert False, "should not have gotten this far"
+
+email_fake_server = Fake('server')
+email_render_template = Fake(callable=True).with_args("email.html", some="argument").returns("some_body")
+email_send_using_sendmail = Fake(callable=True).with_args("some@user", ["to@user"], "some email", "some_body").returns(0)
+@with_fakes
+@with_patched_object(Controller, "render_template", email_render_template)
+@with_patched_object(Controller, "send_using_sendmail", email_send_using_sendmail)
+def test_send_template_by_mail():
+    clear_expectations()
+    clear()
+
+    email_fake_server.has_attr(template_path="/some/path")
+
+    controller = Controller()
+    controller.server = email_fake_server
+
+    status = controller.send_template_by_mail("some@user", ["to@user"], "some email", "email.html", some="argument")
+
+    assert status == 0
+
+email_fake_server2 = Fake('server')
+email_render_template2 = Fake(callable=True).with_args("email.html", some="argument").returns("some_body")
+email_send_using_sendmail2 = Fake(callable=True).with_args("some@user", ["to@user"], "some email", "some_body").raises(ValueError())
+email_send_using_smtp2 = Fake(callable=True).with_args("some@user", ["to@user"], "some email", "some_body").returns(0)
+@with_fakes
+@with_patched_object(Controller, "render_template", email_render_template2)
+@with_patched_object(Controller, "send_using_sendmail", email_send_using_sendmail2)
+@with_patched_object(Controller, "send_using_smtp", email_send_using_smtp2)
+def test_send_template_by_mail_using_fallback():
+    clear_expectations()
+    clear()
+
+    email_fake_server2.has_attr(template_path="/some/path")
+
+    controller = Controller()
+    controller.server = email_fake_server2
+
+    status = controller.send_template_by_mail("some@user", ["to@user"], "some email", "email.html", some="argument")
+
+    assert status == 0
+
