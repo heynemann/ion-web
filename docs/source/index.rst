@@ -38,10 +38,10 @@ Let's write a test for our action. Let's start with a unit (unwired) test::
 
     #I'll use Fudge to mock stuff since I'm doing that in Ion's codebase
 
-    render_template = Fake(callable=True).with_args('some_action.html', some="args").returns('Hello World args')
+    custom_render_template = Fake(callable=True).with_args('some_action.html', some="args").returns('Hello World args')
 
-    @with_patched_object(controllers.IndexController, "render_template", custom_render_template)
-    @with_patched_object(controllers.IndexController, "store", fake_store)
+    @with_patched_object(controllers.TestController, "render_template", custom_render_template)
+    @with_patched_object(controllers.TestController, "store", fake_store)
     @with_fakes
     def test_some_action():
         ctrl = TestController()
@@ -60,7 +60,7 @@ I'll write a functional (wired) test now, just in case you get nervous::
         while not server.status == ServerStatus.Started:
             time.sleep(0.5)
 
-        controller = IndexController()
+        controller = TestController()
         controller.server = server
         controller.context = server.context
 
@@ -90,7 +90,7 @@ This very simple controller creates a route at http://localhost:8082/something t
 
 This template will render "Hello World args" as the result of the template processing.
 
-This should be enough to entice you to check the rest of our docs.
+This should be enough to entice you to check the rest of our docs. A complete sample, that includes models and templates in more depth, can be found in the quickstart page.
 
 Follow the Table of Contents below:
 

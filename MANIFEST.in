@@ -1,0 +1,9 @@
+prune dist
+prune build
+recursive-include ion *.txt
+recursive-include ion *.html
+recursive-include ion *.htm
+recursive-include ion *.rst
+recursive-include ion *.py
+recursive-include ion *.ini
+

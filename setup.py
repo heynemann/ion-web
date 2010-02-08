@@ -19,7 +19,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'Ion',
-    version = "0.1.0",
+    version = "0.2.1",
     description = "Ion is an MVC Web Framework",
     long_description = """Ion is an MVC Web Framework.""",
     keywords = 'MVC Web Framework',
@@ -35,18 +35,25 @@ setup(
                    'Operating System :: Microsoft :: Windows',
                    'Operating System :: POSIX :: Linux',
                    'Programming Language :: Python :: 2.6',],
-    packages=["ion",],
+    packages = ['ion'],
     include_package_data=True,
     package_data = {
-        'ion.console.new_project': ['*.*'],
+        '': ['*.txt'],
+        '': ['*.rst'],
+        '': ['*.html'],
+        '': ['*.py'],
     },
     install_requires=[
+        "cherrypy",
+        "jinja2",
+        "storm",
+        "routes",
+        "nose"
     ],
     entry_points = {
         'console_scripts': [
             'ion = ion.console.ion_console:main',
         ],
     },
-
 )
 

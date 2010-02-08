@@ -9,4 +9,5 @@ build/
 skinkdb.db
 tests/functional/repo
 ci_tmp/
-skink.egg*
+ion.egg*
+Ion.egg*

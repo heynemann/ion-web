@@ -87,6 +87,10 @@ Open the <project_name>/models/__init__.py file and type the following::
     class Post(object):
         __storm_table__ = "post"
 
+        def __init__(self, title, body):
+            self.title = title
+            self.body = body
+
         id = Int(primary=True)
         title = Unicode()
         body = Unicode()
@@ -132,20 +136,81 @@ Let's create a table called post with the following script::
 Creating a new post
 -------------------
 
-Placeholder
+First let's create a quick post form in our previous template ('/posts'). Let's change it to be like this::
+
+    <html>
+        <head>
+            <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+            <title>My Sample Project - Posts</title>
+        </head>
+        <body>
+            <p>List of Posts:</p>
+            <p>No posts so far.</p>
+            <form action="newpost" method="post">
+                Title: <input type="text" name="title" /><br />
+                Body: <br />
+                <textarea name="body"></textarea>
+            </form>
+        </body>
+    <html>
+
+Ok, now that we have a form that posts the user data to a '/newpost' action. Let's create that action. Add this code to the controller (do not forget from <project_name>.models import *)::
+
+    @route('/newpost')
+    def new_post(self, title, body):
+        post = Post(title=title, body=body)
+
+        self.store.add(post)
+
+        self.redirect('/posts')
+
+Let's decompose this action into steps. First we create a brand new post with the data the user provided. Then we use the Data Store (from storm) to add this entity to the database. Now that we have created the post we redirect the user to the posts list so he can see his new message.
+
+But...he won't see his message until we list all the posts.
+
+For more information on storm you can check the `documentation <https://storm.canonical.com/#Documentation>`_ for the product.
 
 How about listing our posts
 ---------------------------
 
-Placeholder
+First thing we need to do is return the list of posts in our action, so that our template can use it. Let's change our show_posts action to return all the posts::
 
-Come On, I want to login
-------------------------
+    @route('/posts')
+    def show_posts(self):
+        all_posts = list(self.store.find(Post))
+        return self.render_template('posts.html', posts=all_posts)
 
-Placeholder
+Now we iterate on the posts in our template::
+
+    <html>
+        <head>
+            <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+            <title>My Sample Project - Posts</title>
+        </head>
+        <body>
+            <p>List of Posts:</p>
+            {% for post in posts %}
+                <p>{{ post.title }}</p>
+                <p>{{ post.body }}</p>
+                <hr />
+            {% else %}
+                <p>No posts so far.</p>
+            {% endfor %}
+            <br /><br />
+            <form action="newpost" method="post">
+                Title: <input type="text" name="title" /><br />
+                Body: <br />
+                <textarea name="body"></textarea>
+            </form>
+        </body>
+    <html>
+
+You should see a list of posts in the first page now and whenever you post a new message it shows up.
+
+For more information on the templating language and possibilities, check `Jinja's documentation <http://jinja.pocoo.org/2/documentation/>`_.
 
 Conclusion
 ----------
 
-Placeholder
+This quick start should have given you basic directions on how to get started with Ion. 
 
