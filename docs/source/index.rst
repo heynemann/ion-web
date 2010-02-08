@@ -99,6 +99,7 @@ Follow the Table of Contents below:
 
    requirements
    quickstart
+   testing
    ion_events
    plugin_authoring
 

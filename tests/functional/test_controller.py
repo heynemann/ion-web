@@ -44,6 +44,7 @@ def test_can_render_template_from_null_template_folder():
     controller = TemplateFolderController()
     controller.server = server
     controller.context = server.context
+
     content = controller.render_template('test_template.html')
     
     assert content == "Hello World"

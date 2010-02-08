@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 from os.path import split, abspath, join, dirname
 
 from jinja2 import Environment, FileSystemLoader
@@ -98,6 +99,8 @@ class Controller(object):
 
     @property
     def store(self):
+        if not thread_data or not hasattr(thread_data, 'store') or not thread_data.store:
+            raise ValueError('The current controller does not have a configured store. Did you, by any chance, forgot to pass it to the controller in a test?')
         return thread_data.store
 
     @property
@@ -128,7 +131,29 @@ class Controller(object):
         env = Environment(loader=FileSystemLoader(template_path))
 
         template = env.get_template(template_file)
-        return template.render(user=self.user, **kw)
+        return template.render(user=self.user, settings=self.server.context.settings, **kw)
+
+    def send_template_by_mail(self, from_email, to_emails, subject, template_file, **kw):
+        template_path = self.server.template_path
+
+        env = Environment(loader=FileSystemLoader(template_path))
+
+        template = env.get_template(template_file)
+        body = template.render(user=self.user, settings=self.server.context.settings, **kw)
+
+        SENDMAIL = "/usr/sbin/sendmail" # sendmail location
+        p = os.popen("%s -t" % SENDMAIL, "w")
+        p.write("From: %s\n" % from_email)
+        p.write("To: %s\n" % (", ".join(to_emails)))
+        p.write("Subject: %s\n" % subject)
+        p.write("\n") # blank line separating headers from body
+        p.write(body)
+        sts = p.close()
+
+        if sts != 0:
+            self.log("Sendmail exit status: %d" % sts)
+
+        return sts
 
     def redirect(self, url):
         raise cherrypy.HTTPRedirect(url)

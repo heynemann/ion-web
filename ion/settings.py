@@ -17,7 +17,7 @@
 
 from os.path import abspath, join
 
-from ConfigParser import ConfigParser
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 class Settings(object):
     def __init__(self, root_dir):
@@ -49,5 +49,10 @@ class SettingsSection(object):
         return {'true': True, 'false': False}.get(getattr(self, config_name).lower())
 
     def __getattr__(self, config_name):
-        return self.config.get(self.name, config_name)
+        try:
+            return self.config.get(self.name, config_name)
+        except NoSectionError:
+            return None
+        except NoOptionError:
+            return None
 
