@@ -11,3 +11,4 @@ tests/functional/repo
 ci_tmp/
 ion.egg*
 Ion.egg*
+ion/Ion.egg-info/
