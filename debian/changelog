@@ -1,3 +1,9 @@
+python-ion (0.3.3) dev; urgency=low
+
+  * Minor fixes
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Mon, 8 Feb 2010 16:49:00 -0300
+ 
 python-ion (0.3.2) dev; urgency=low
 
   * Fixed cherrypy dependency (>3.1)
