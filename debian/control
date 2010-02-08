@@ -12,7 +12,7 @@ Vcs-Browser: http://github.com/heynemann/ion/tree/master
 
 Package: python-ion
 Architecture: all
-Depends: ${misc:Depends}, ${python:Depends}, python-cherrypy3, python-storm, python-jinja2, python-routes, python-nosetests
+Depends: ${misc:Depends}, ${python:Depends}, python-cherrypy3, python-storm, python-jinja2, python-routes, python-nose
 Recommends:
 Suggests:
 Description: Ion is an MVC web framework for python apps.

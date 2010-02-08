@@ -1,3 +1,9 @@
+python-ion (0.3.1) dev; urgency=low
+
+  * Fixed nosetests dependency
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Mon, 8 Feb 2010 15:18:29 -0300
+
 python-ion (0.3.0) dev; urgency=low
 
   * Initial release.
