@@ -21,6 +21,7 @@ from fudge.inspector import arg
 
 import ion.settings as sets
 from ion import Settings, SettingsSection
+from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
 parser = (Fake("ConfigParser").expects("__init__")
                               .expects("read")
@@ -121,4 +122,16 @@ def test_settings_read_attribute_as_bool():
     assert ss.as_bool('setting_true_2')
     assert not ss.as_bool('setting_false_1')
     assert not ss.as_bool('setting_false_2')
+
+@with_fakes
+def test_settings_read_attribute_with_no_section_returns_none():
+    clear_expectations()
+
+    fake_config = Fake('config')
+    fake_config.expects('get').with_args('name', 'setting_true_1').raises(NoSectionError('name'))
+    fake_config.next_call('get').with_args('name', 'setting_true_2').raises(NoOptionError('name', 'setting_true_2'))
+
+    ss = SettingsSection(None, 'name', fake_config)
+    assert not ss.as_bool('setting_true_1')
+    assert not ss.as_bool('setting_true_2')
 
