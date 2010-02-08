@@ -20,6 +20,7 @@ import time
 
 import ion.controllers as ctrl
 from ion import Server, ServerStatus, Context
+from ion.test_helpers import ServerHelper
 from ion.controllers import Controller, route
 
 root_dir = abspath(dirname(__file__))
@@ -34,19 +35,12 @@ def test_can_render_template_from_null_template_folder():
     class TemplateFolderController(Controller):
         pass
 
-    server = Server(root_dir)
+    server = ServerHelper(join(root_dir, 'controller_config1.ini'))
 
-    server.start('controller_config1.ini', non_block=True)
-
-    while not server.status == ServerStatus.Started:
-        time.sleep(0.5)
-
-    controller = TemplateFolderController()
-    controller.server = server
-    controller.context = server.context
+    controller = server.ctrl(TemplateFolderController)
 
     content = controller.render_template('test_template.html')
-    
+
     assert content == "Hello World"
 
 def test_can_render_template_from_specific_template_folder():
@@ -55,16 +49,11 @@ def test_can_render_template_from_specific_template_folder():
     class TemplateFolderController(Controller):
         pass
 
-    server = Server(root_dir)
+    server = ServerHelper(join(root_dir, 'controller_config2.ini'))
 
-    server.start('controller_config2.ini', non_block=True)
+    controller = server.ctrl(TemplateFolderController)
 
-    while not server.status == ServerStatus.Started:
-        time.sleep(0.5)
-
-    controller = TemplateFolderController()
-    controller.server = server
-    controller.context = server.context
     content = controller.render_template('test_template.html')
-    
+
     assert content == "Hello World 2"
+
