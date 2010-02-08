@@ -15,11 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from ion import Version
 from setuptools import setup, find_packages
 
 setup(
     name = 'Ion',
-    version = "0.2.1",
+    version = Version,
     description = "Ion is an MVC Web Framework",
     long_description = """Ion is an MVC Web Framework.""",
     keywords = 'MVC Web Framework',
