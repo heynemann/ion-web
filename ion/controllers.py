@@ -133,25 +133,26 @@ class Controller(object):
         template = env.get_template(template_file)
         return template.render(user=self.user, settings=self.server.context.settings, **kw)
 
-    def send_template_by_mail(self, from_email, to_emails, subject, template_file, **kw):
+    def send_template_by_mail(self, from_email, to_emails, subject, template_file, html=True, **kw):
         body = self.render_template(template_file, **kw)
-
-        exit_code = 1
-        try:
-            exit_code = self.send_using_sendmail(from_email, to_emails, subject, body)
-        except:
-            exit_code = self.send_using_smtp(from_email, to_emails, subject, body)
-
+        exit_code = self.send_using_sendmail(from_email, to_emails, subject, body, html=html)
         return exit_code
 
-    def send_using_sendmail(self, from_email, to_emails, subject, body):
+    def send_using_sendmail(self, from_email, to_emails, subject, body, html=True):
         SENDMAIL = "/usr/sbin/sendmail" # sendmail location
         p = os.popen("%s -t" % SENDMAIL, "w")
         p.write("From: %s\n" % from_email)
         p.write("To: %s\n" % (", ".join(to_emails)))
         p.write("Subject: %s\n" % subject)
         p.write("\n") # blank line separating headers from body
+
+        if html:
+            p.write('Content-Type: text/html; charset="us-ascii"\n')
+            p.write('MIME-Version: 1.0')
+            p.write('Content-Transfer-Encoding: 7bit')
+
         p.write(body)
+
         sts = p.close()
 
         if sts != 0:

@@ -23,12 +23,15 @@ import ion.settings as sets
 from ion import Settings, SettingsSection
 from ConfigParser import ConfigParser, NoSectionError, NoOptionError
 
+exists_fake = Fake(callable=True).with_args(arg.any_value()).returns(True)
+
 parser = (Fake("ConfigParser").expects("__init__")
                               .expects("read")
                               .with_args(arg.endswith("config.ini")))
 
 @with_fakes
 @with_patched_object(sets, "ConfigParser", parser)
+@with_patched_object(sets, "exists", exists_fake)
 def test_can_create_settings():
     clear_expectations()
     settings = Settings("some_dir")
@@ -37,6 +40,7 @@ def test_can_create_settings():
 
 @with_fakes
 @with_patched_object(sets, "ConfigParser", parser)
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_will_load_config_ini():
     clear_expectations()
     settings = Settings("some_dir")
@@ -45,9 +49,11 @@ def test_settings_will_load_config_ini():
 
 @with_fakes
 @with_patched_object(sets, "ConfigParser", parser)
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_will_load_config_ini_retains_config():
     clear_expectations()
     settings = Settings("some_dir")
+    
 
     settings.load()
 
@@ -59,6 +65,7 @@ custom_file_parser = (Fake("ConfigParser").expects("__init__")
 
 @with_fakes
 @with_patched_object(sets, "ConfigParser", custom_file_parser)
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_can_load_custom_file():
     clear_expectations()
     settings = Settings("some_dir")
@@ -69,6 +76,7 @@ def test_settings_can_load_custom_file():
 
 @with_fakes
 @with_patched_object(sets, "ConfigParser", custom_file_parser)
+@with_patched_object(sets, "exists", exists_fake)
 def test_read_attribute_before_load_gives_error():
     clear_expectations()
     settings = Settings("some_dir")
@@ -90,6 +98,7 @@ get_attr_parser = (Fake("ConfigParser").expects("__init__")
 
 @with_fakes
 @with_patched_object(sets, "ConfigParser", get_attr_parser)
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_read_attribute_returns_config_read():
     clear_expectations()
     settings = Settings("some_dir")
@@ -98,6 +107,7 @@ def test_settings_read_attribute_returns_config_read():
     assert settings.SomeSection.SomeAttribute == "attribute_value"
 
 @with_fakes
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_read_attribute_as_int():
     clear_expectations()
 
@@ -108,6 +118,7 @@ def test_settings_read_attribute_as_int():
     assert ss.as_int('setting') == 10
 
 @with_fakes
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_read_attribute_as_bool():
     clear_expectations()
 
@@ -124,6 +135,7 @@ def test_settings_read_attribute_as_bool():
     assert not ss.as_bool('setting_false_2')
 
 @with_fakes
+@with_patched_object(sets, "exists", exists_fake)
 def test_settings_read_attribute_with_no_section_returns_none():
     clear_expectations()
 
@@ -135,3 +147,18 @@ def test_settings_read_attribute_with_no_section_returns_none():
     assert not ss.as_bool('setting_true_1')
     assert not ss.as_bool('setting_true_2')
 
+exists_fake_false = Fake(callable=True).with_args(arg.any_value()).returns(False)
+@with_fakes
+@with_patched_object(sets, "exists", exists_fake_false)
+def test_settings_read_file_that_does_not_exist_raises():
+    clear_expectations()
+    settings = Settings("some_dir")
+
+    try:
+        settings.load()
+    except ValueError, err:
+        assert str(err).startswith("The specified path")
+        assert str(err).endswith("was not found!")
+        return
+
+    assert False, "Shouldn't have gotten this far"
