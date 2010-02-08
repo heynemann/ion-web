@@ -7,10 +7,10 @@ from ion import Server, ServerStatus, Context
 
 class ServerHelper (object):
 
-    def __init__(self, config_path):
-        self.server = Server(abspath(dirname(config_path)))
+    def __init__(self, root_path, config_path):
+        self.server = Server(root_path)
 
-        self.server.start(split(config_path)[-1], non_block=True)
+        self.server.start(config_path, non_block=True)
 
         while not self.server.status == ServerStatus.Started:
             time.sleep(0.5)

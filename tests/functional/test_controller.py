@@ -35,7 +35,7 @@ def test_can_render_template_from_null_template_folder():
     class TemplateFolderController(Controller):
         pass
 
-    server = ServerHelper(join(root_dir, 'controller_config1.ini'))
+    server = ServerHelper(root_dir, 'controller_config1.ini')
 
     controller = server.ctrl(TemplateFolderController)
 
@@ -49,7 +49,7 @@ def test_can_render_template_from_specific_template_folder():
     class TemplateFolderController(Controller):
         pass
 
-    server = ServerHelper(join(root_dir, 'controller_config2.ini'))
+    server = ServerHelper(root_dir, 'controller_config2.ini')
 
     controller = server.ctrl(TemplateFolderController)
 
