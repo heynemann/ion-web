@@ -56,3 +56,8 @@ doc:
 	cd docs && make html
 	firefox `pwd`/docs/build/html/index.html &
 
+deb:
+	mv .git /tmp/ion_git
+	python -c 'import os;os.system("debuild -tc")'
+	cp ../*ion*.deb ./releases
+	mv /tmp/ion_git .git

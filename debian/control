@@ -1,0 +1,18 @@
+Source: python-ion
+Section: python
+Priority: optional
+Maintainer: Bernardo Heynemann <heynemann@gmail.com>
+Uploaders: Bernardo Heynemann <heynemann@gmail.com>
+Standards-Version: 3.8.0
+Build-Depends: debhelper (>= 7), python, cdbs, python-setuptools, python-support
+Build-Depends-Indep: python-sphinx
+Homepage: http://www.ionwebframework.org/
+Vcs-Git: git://github.com/heynemann/ion.git
+Vcs-Browser: http://github.com/heynemann/ion/tree/master
+
+Package: python-ion
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, python-cherrypy3, python-storm, python-jinja2, python-routes, python-nosetests
+Recommends:
+Suggests:
+Description: Ion is an MVC web framework for python apps.
