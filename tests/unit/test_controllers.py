@@ -127,7 +127,7 @@ package_loader = Fake(callable=True).with_args(arg.endswith("some/root/templates
 
 template_fake = Fake('template')
 template_loader.expects('get_template').with_args('some_file.html').returns(template_fake)
-template_fake.expects('render').with_args(user="user1", some="args").returns("expected")
+template_fake.expects('render').with_args(user="user1", some="args", settings=arg.any_value()).returns("expected")
 
 @with_fakes
 @with_patched_object(ctrl, "Environment", environment)
@@ -141,7 +141,7 @@ def test_render_template():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
-    ctrl.context = template_context
+    ctrl.server.context = template_context
     content = ctrl.render_template("some_file.html", some="args")
 
     assert content == "expected"
@@ -164,7 +164,7 @@ def test_render_template_in_folder_without_package():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
-    ctrl.context = template_context2
+    ctrl.server.context = template_context2
 
     content = ctrl.render_template("some_file.html", some="args")
 
@@ -188,7 +188,7 @@ def test_render_template_in_folder_with_null_package():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
-    ctrl.context = template_context3
+    ctrl.server.context = template_context3
     content = ctrl.render_template("some_file.html", some="args")
 
     assert content == "expected"
