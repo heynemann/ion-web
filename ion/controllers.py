@@ -86,7 +86,6 @@ class Controller(object):
     __routes__ = None
 
     def __init__(self):
-        self.context = None
         self.server = None
 
     def log(self, message):
@@ -96,6 +95,18 @@ class Controller(object):
     @classmethod
     def all(self):
         return __CONTROLLERS__
+
+    @property
+    def settings(self):
+        if not self.server:
+            return None
+        return self.server.context.settings
+
+    @property
+    def context(self):
+        if not self.server:
+            return None
+        return self.server.context
 
     @property
     def store(self):

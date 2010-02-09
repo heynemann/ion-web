@@ -134,7 +134,6 @@ class Server(object):
         for controller_type in Controller.all():
             controller = controller_type()
             controller.server = self
-            controller.context = self.context
             controller.register_routes(routes_dispatcher)
 
         dispatcher = routes_dispatcher
