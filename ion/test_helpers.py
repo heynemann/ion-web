@@ -18,6 +18,5 @@ class ServerHelper (object):
     def ctrl(self, controller):
         _ctrl = controller()
         _ctrl.server = self.server
-        _ctrl.context = self.server.context
         return _ctrl
 
