@@ -141,7 +141,7 @@ def test_render_template():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
-    ctrl.server.context = template_context
+    ctrl.server.has_attr(context=template_context)
     content = ctrl.render_template("some_file.html", some="args")
 
     assert content == "expected"
@@ -276,6 +276,7 @@ def test_authenticated_decorator_checks_for_user():
 
     fake_server = Fake('server')
     ctrl.server = fake_server
+    ctrl.server.context = Fake('context')
 
     ctrl.server.expects('publish').with_args('on_before_user_authentication', arg.any_value())
     ctrl.server.next_call('publish').with_args('on_user_authentication_failed', arg.any_value())
@@ -300,6 +301,7 @@ def test_authenticated_decorator_executes_function_when_user_exists():
 
     fake_server = Fake('server')
     ctrl.server = fake_server
+    ctrl.server.context = Fake('context')
 
     ctrl.server.expects('publish').with_args('on_before_user_authentication', arg.any_value())
     ctrl.server.next_call('publish').with_args('on_user_authentication_successful', arg.any_value())
@@ -342,10 +344,11 @@ def test_logging_does_nothing_if_verbose_is_false():
     clear()
 
     ctrl = Controller()
-    ctrl.context = Fake('context')
-    ctrl.context.has_attr(settings=Fake('settings'))
-    ctrl.context.settings.has_attr(Ion=Fake('Ion'))
-    ctrl.context.settings.Ion.expects('as_bool').with_args('verbose').returns(False)
+    ctrl.server = Fake('server')
+    ctrl.server.context = Fake('context')
+    ctrl.server.context.has_attr(settings=Fake('settings'))
+    ctrl.server.context.settings.has_attr(Ion=Fake('Ion'))
+    ctrl.server.context.settings.Ion.expects('as_bool').with_args('verbose').returns(False)
 
     ctrl.log('bla')
 
@@ -358,10 +361,11 @@ def test_logging_calls_cherrypy_log_if_verbose_is_true():
     clear()
 
     ctrl = Controller()
-    ctrl.context = Fake('context')
-    ctrl.context.has_attr(settings=Fake('settings'))
-    ctrl.context.settings.has_attr(Ion=Fake('Ion'))
-    ctrl.context.settings.Ion.expects('as_bool').with_args('verbose').returns(True)
+    ctrl.server = Fake('server')
+    ctrl.server.context = Fake('context')
+    ctrl.server.context.has_attr(settings=Fake('settings'))
+    ctrl.server.context.settings.has_attr(Ion=Fake('Ion'))
+    ctrl.server.context.settings.Ion.expects('as_bool').with_args('verbose').returns(True)
 
     ctrl.log('bla')
 
