@@ -28,7 +28,7 @@ import cherrypy
 def do_commit():
     try:
         if not cherrypy.request.rolledback and hasattr(cherrypy.thread_data, 'store'):
-                cherrypy.thread_data.store.commit()
+            cherrypy.thread_data.store.commit()
     except:
         if hasattr(cherrypy.thread_data, 'store'):
             cherrypy.thread_data.store.rollback()

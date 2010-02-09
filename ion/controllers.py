@@ -25,7 +25,7 @@ from cherrypy import thread_data
 __CONTROLLERS__ = []
 __CONTROLLERSDICT__ = {}
 
-def route(route, name=None, priority=50):
+def route(route, name=None, httpmethod="GET", priority=50):
     def dec(func):
         actual_name = func.__name__
         if name:
@@ -34,7 +34,8 @@ def route(route, name=None, priority=50):
             actual_name, {
                 'route': route,
                 'method': func.__name__,
-                'priority': priority
+                'priority': priority,
+                'httpmethod':httpmethod
             }
         )
 

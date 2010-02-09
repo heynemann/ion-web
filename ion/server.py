@@ -18,8 +18,26 @@
 import sys
 import os
 from os.path import join, abspath, dirname, splitext, split
+from new import classobj 
+import re
 
-import cherrypy
+has_cherrypy = True
+has_tornado = True
+
+try:
+    import cherrypy
+except ImportError:
+    has_cherrypy = False
+
+try:
+    import tornado.httpserver
+    import tornado.ioloop
+    import tornado.web
+except ImportError:
+    has_tornado = False
+
+if not has_tornado and not has_cherrypy:
+    raise RuntimeError('You have to install either cherrypy or tornado')
 
 from ion.controllers import Controller
 from storm.locals import *
@@ -49,7 +67,7 @@ class Server(object):
         templ_path = templ_path and abspath(join(self.root_dir, templ_path)) or abspath(join(self.root_dir, 'templates'))
         return templ_path
 
-    def start(self, config_path, non_block=False):
+    def start(self, config_path, should_block=True):
         self.status = ServerStatus.Starting
         self.publish('on_before_server_start', {'server':self, 'context':self.context})
 
@@ -61,7 +79,10 @@ class Server(object):
 
         self.import_controllers()
 
-        self.run_server(non_block)
+        if self.context.settings.Ion.webserver == 'cherrypy':
+            self.run_server_cherrypy(should_block)
+        elif self.context.settings.Ion.webserver == 'tornado':
+            self.run_server_tornado(should_block)
 
         self.status = ServerStatus.Started
         self.publish('on_after_server_start', {'server':self, 'context':self.context})
@@ -81,7 +102,11 @@ class Server(object):
         self.status = ServerStatus.Stopping
         self.publish('on_before_server_stop', {'server':self, 'context':self.context})
 
-        cherrypy.engine.exit()
+        if self.context.settings.Ion.webserver == 'cherrypy':
+            cherrypy.engine.exit()
+        elif self.context.settings.Ion.webserver == 'tornado':
+            if self.tornado_server:
+                self.tornado_server.stop()
 
         self.status = ServerStatus.Stopped
         self.publish('on_after_server_stop', {'server':self, 'context':self.context})
@@ -140,7 +165,7 @@ class Server(object):
         dispatcher = routes_dispatcher
         return dispatcher
 
-    def run_server(self, non_block=False):
+    def run_server_cherrypy(self, should_block=True):
         cherrypy.config.update(self.get_server_settings())
         dispatcher = self.get_dispatcher()
         mounts = self.get_mounts(dispatcher)
@@ -156,8 +181,72 @@ class Server(object):
             cherrypy.config.update({'tools.storm.on': False})
 
         cherrypy.engine.start()
-        if not non_block:
+        if should_block:
             cherrypy.engine.block()
+
+    def run_server_tornado(self, should_block=True):
+        routes = []
+        for controller_type in Controller.all():
+            ctrl = controller_type()
+            ctrl.server = self
+            ctrl.context = self.context
+
+            for route in ctrl.__routes__:
+                ctrl_method = getattr(ctrl, route[1]['method'])
+
+                def execute_method(*args, **kw):
+                    updated_args = list(args)
+                    instance = updated_args[0]
+                    if instance in updated_args: updated_args.remove(instance)
+
+                    instance.write(ctrl_method(*updated_args, **kw))
+
+                def prepare(*args, **kw):
+                    pass
+
+                def finish(*args, **kw):
+                    pass
+
+                methods = {
+                    route[1]['httpmethod'].lower():execute_method,
+                    'prepare':prepare,
+                    'finish':finish
+                }
+
+                new_class = classobj('RouteHandler_%s_%s' % (controller_type.__name__, route[1]['method']), (tornado.web.RequestHandler,), methods)
+
+                translated = self.translate_route(route[1]['route'])
+                routes.append((translated, new_class))
+
+        sets = self.context.settings
+        media_path = sets.Ion.media_path
+
+        if not media_path:
+            media_dir = "media"
+            media_path = self.root_dir
+        else:
+            #REFACTOR
+            paths = split(media_path)
+            media_dir = paths[-1]
+            media_path = join(self.root_dir, join(*paths[:-1]).lstrip("/")).rstrip("/")
+
+        settings = {
+            "static_path": join(media_path, media_dir)
+        }
+
+        application = tornado.web.Application(routes, **settings)
+
+        if should_block:
+            http_server = tornado.httpserver.HTTPServer(application)
+            http_server.listen(self.context.settings.Ion.as_int('port'))
+            self.tornado_server = tornado.ioloop.IOLoop.instance()
+            self.tornado_server.start()
+
+    def translate_route(self, route):
+        regex = r'(?P<keyword>[:]\w+)'
+        result = re.sub(regex, r'(?P<\1>\w+)', route).replace('?P<:', '?P<')
+
+        return result
 
     def test_connection(self):
         from MySQLdb import OperationalError
