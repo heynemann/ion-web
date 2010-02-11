@@ -1,3 +1,9 @@
+python-ion (0.4.0) dev; urgency=low
+
+  * Healthcheck implemented
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Mon, 11 Feb 2010 10:47:00 -0300
+
 python-ion (0.3.3) dev; urgency=low
 
   * Minor fixes
