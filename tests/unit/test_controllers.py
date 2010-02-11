@@ -404,3 +404,63 @@ def test_send_template_by_mail():
 
     assert status == 0
 
+settings_health_check = Fake('settings')
+
+@with_fakes
+@with_patched_object(ctrl.Controller, "settings", settings_health_check)
+def test_healthcheck_action():
+    clear_expectations()
+    clear()
+
+    settings_health_check.Ion = Fake('Ion')
+    settings_health_check.Ion.healthcheck_text = "CUSTOMTEXT"
+
+    fake_server_health_check = Fake('server')
+    fake_server_health_check.expects('test_connection').returns(True)
+
+    controller = Controller()
+    controller.server = fake_server_health_check
+
+    assert controller.healthcheck() == "CUSTOMTEXT"
+
+@with_fakes
+@with_patched_object(ctrl.Controller, "settings", settings_health_check)
+def test_healthcheck_action_returns_working_if_no_text_in_config():
+    clear_expectations()
+    clear()
+
+    settings_health_check.Ion = Fake('Ion')
+    settings_health_check.Ion.healthcheck_text = None
+
+    fake_server_health_check = Fake('server')
+    fake_server_health_check.expects('test_connection').returns(True)
+
+    controller = Controller()
+    controller.server = fake_server_health_check
+
+    assert controller.healthcheck() == "WORKING"
+
+@with_fakes
+@with_patched_object(ctrl.Controller, "settings", settings_health_check)
+def test_healthcheck_action_fails_if_database_not_found():
+    clear_expectations()
+    clear()
+
+    settings_health_check.Ion = Fake('Ion')
+    settings_health_check.Ion.healthcheck_text = None
+
+    fake_server_health_check = Fake('server')
+    controller = Controller()
+    controller.server = fake_server_health_check
+
+    fake_server_health_check.expects('test_connection').returns(False)
+    fake_server_health_check.test_connection_error = ValueError('Fake error')
+
+    try:
+        controller.healthcheck()
+    except RuntimeError, err:
+        assert str(err) == "The connection to the database failed with error: Fake error"
+        return
+
+    assert False, "Should not have reached this far."
+

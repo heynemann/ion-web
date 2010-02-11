@@ -57,3 +57,31 @@ def test_can_render_template_from_specific_template_folder():
 
     assert content == "Hello World 2"
 
+def test_healthcheck_returns_working_when_no_text_found_in_config():
+    clear()
+
+    class HealthCheckController(Controller):
+        pass
+
+    server = ServerHelper(root_dir, 'controller_config3.ini')
+
+    controller = server.ctrl(HealthCheckController)
+
+    content = controller.healthcheck()
+
+    assert content == "WORKING"
+
+def test_healthcheck_returns_custom_string_when_no_text_found_in_config():
+    clear()
+
+    class HealthCheckController(Controller):
+        pass
+
+    server = ServerHelper(root_dir, 'controller_config1.ini')
+
+    controller = server.ctrl(HealthCheckController)
+
+    content = controller.healthcheck()
+
+    assert content == "CUSTOMTEXT"
+

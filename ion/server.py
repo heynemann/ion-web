@@ -42,6 +42,7 @@ class Server(object):
         self.root_dir = root_dir
         self.context = context or Context(root_dir=root_dir)
         self.storm_stores = {}
+        self.test_connection_error = None
 
     @property
     def template_path(self):
@@ -136,6 +137,11 @@ class Server(object):
             controller.server = self
             controller.register_routes(routes_dispatcher)
 
+        route_name = "healthcheck"
+        controller = Controller()
+        controller.server = self
+        routes_dispatcher.connect("healthcheck", "/healthcheck", controller=controller, action="healthcheck")
+
         dispatcher = routes_dispatcher
         return dispatcher
 
@@ -166,7 +172,7 @@ class Server(object):
             self.db.connect()
             self.db.disconnect()
             return True
-        except OperationalError:
+        except OperationalError, err:
             message = ['', '']
             message.append("============================ IMPORTANT ERROR ============================")
             message.append("No connection to the database could be made with the supplied parameters.")
@@ -175,6 +181,7 @@ class Server(object):
             message.append('')
             message.append('')
             cherrypy.log.error("\n".join(message), "STORM")
+            self.test_connection_error = err
 
         return False
 

@@ -177,3 +177,12 @@ class Controller(object):
     def redirect(self, url):
         raise cherrypy.HTTPRedirect(url)
 
+    def healthcheck(self):
+        healthcheck_text = self.settings.Ion.healthcheck_text
+
+        result = self.server.test_connection()
+        if not result:
+            raise RuntimeError("The connection to the database failed with error: %s" % str(self.server.test_connection_error))
+
+        return healthcheck_text or "WORKING"
+

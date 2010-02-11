@@ -60,4 +60,22 @@ def test_server_responds_for_controller_action():
     finally:
         server.stop()
 
+def test_server_responds_for_healthcheck_action():
+    clear()
+
+    class TestController(Controller):
+        pass
+
+    server = Server(root_dir=root_dir)
+
+    try:
+        server.start(config_path=config_path, non_block=True)
+
+        status_code, content = HttpClient.get(join(server.context.settings.Ion.baseurl, "healthcheck"))
+
+        assert status_code == 200
+        assert content == "WORKING"
+    finally:
+        server.stop()
+
 
