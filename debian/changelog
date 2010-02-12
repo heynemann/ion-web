@@ -1,3 +1,9 @@
+python-ion (0.4.1) dev; urgency=low
+
+  * Controller settings logic fixed
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Mon, 11 Feb 2010 10:47:00 -0300
+
 python-ion (0.4.0) dev; urgency=low
 
   * Healthcheck implemented
