@@ -89,7 +89,7 @@ class Controller(object):
         self.server = None
 
     def log(self, message):
-        if self.context.settings.Ion.as_bool('verbose'):
+        if self.settings.Ion.as_bool('verbose'):
             cherrypy.log(message, "[%s]" % self.__class__.__name__)
 
     @classmethod
@@ -142,7 +142,7 @@ class Controller(object):
         env = Environment(loader=FileSystemLoader(template_path))
 
         template = env.get_template(template_file)
-        return template.render(user=self.user, settings=self.server.context.settings, **kw)
+        return template.render(user=self.user, settings=self.settings, **kw)
 
     def send_template_by_mail(self, from_email, to_emails, subject, template_file, html=True, **kw):
         body = self.render_template(template_file, **kw)
