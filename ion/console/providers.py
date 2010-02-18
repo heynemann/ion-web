@@ -141,7 +141,9 @@ class TestRunnerProvider(Provider):
 
         argv.append(path)
 
-        run(argv=argv)
+        result = run(argv=argv)
+        if not result:
+            sys.exit(1)
 
     def execute(self, current_dir, options, args):
         tests_dir = join(current_dir, "tests")

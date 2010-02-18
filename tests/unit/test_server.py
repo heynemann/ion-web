@@ -30,6 +30,7 @@ from ion.controllers import Controller, route
 def clear():
     ctrl.__CONTROLLERS__ = []
     ctrl.__CONTROLLERSDICT__ = {}
+    clear_expectations()
 
 fake_import_controllers = Fake(callable=True)
 fake_test_db = Fake(callable=True).returns(True)
@@ -209,7 +210,10 @@ custom_dispatch = Fake('dispatcher').has_attr(RoutesDispatcher=Fake(callable=Tru
 @with_patched_object("cherrypy", "dispatch", custom_dispatch)
 def test_get_dispatcher():
     clear()
+
     server = Server(root_dir="some", context=None)
+
+    routes_dispatcher.expects('connect').with_args("healthcheck", "/healthcheck", controller=arg.any_value(), action="healthcheck")
 
     dispatcher = server.get_dispatcher()
 
