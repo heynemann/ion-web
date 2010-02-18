@@ -1,3 +1,9 @@
+python-ion (0.4.2) dev; urgency=low
+
+  * Fixed Ion tests' commands to return proper exit code.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Mon, 18 Feb 2010 10:34:00 -0300
+
 python-ion (0.4.1) dev; urgency=low
 
   * Controller settings logic fixed
