@@ -26,6 +26,7 @@ from storm.locals import *
 from ion.storm_tool import *
 from ion.db import Db
 from ion.context import Context
+from ion.cache import Cache
 
 class ServerStatus(object):
     Unknown = 0
@@ -43,6 +44,7 @@ class Server(object):
         self.context = context or Context(root_dir=root_dir)
         self.storm_stores = {}
         self.test_connection_error = None
+        self.cache = None
 
     @property
     def template_path(self):
@@ -55,6 +57,7 @@ class Server(object):
         self.publish('on_before_server_start', {'server':self, 'context':self.context})
 
         self.context.load_settings(abspath(join(self.root_dir, config_path)))
+        self.cache = Cache(size=1000, age="5s", log=cherrypy.log)
 
         if self.context.settings.Ion.as_bool('debug'):
             from storm.tracer import debug
@@ -214,6 +217,7 @@ class Server(object):
             s.close()
         else:
             cherrypy.log("Could not find store.", "STORM")
+        cherrypy.thread_data.store = None
 
     def connstr(self, protocol, username, password, host, port, database):
         return "%s://%s:%s@%s:%d/%s" % (

@@ -22,6 +22,8 @@ from jinja2 import Environment, FileSystemLoader
 import cherrypy
 from cherrypy import thread_data
 
+from cache import Cache
+
 __CONTROLLERS__ = []
 __CONTROLLERSDICT__ = {}
 
@@ -95,6 +97,10 @@ class Controller(object):
     @classmethod
     def all(self):
         return __CONTROLLERS__
+
+    @property
+    def cache(self):
+        return self.server.cache
 
     @property
     def settings(self):
