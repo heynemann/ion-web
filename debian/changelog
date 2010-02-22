@@ -1,3 +1,9 @@
+python-ion (0.4.3) dev; urgency=low
+
+  * Performance fixes.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Mon, 22 Feb 2010 14:22:00 -0300
+
 python-ion (0.4.2) dev; urgency=low
 
   * Fixed Ion tests' commands to return proper exit code.
