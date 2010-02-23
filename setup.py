@@ -47,7 +47,7 @@ setup(
     install_requires=[
         "cherrypy",
         "jinja2",
-        "storm",
+        "sqlalchemy",
         "routes",
         "nose"
     ],

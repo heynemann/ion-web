@@ -15,11 +15,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-Version="0.5.0"
+from sqlalchemy import Column, Integer, String
 
-from context import *
-from bus import *
-from server import *
-from settings import *
-from controllers import *
-from db import *
+from ion.sqlalchemy_tool import *
+
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+class User(Base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __init__(self, name):
+        self.name = name
+
+    def __repr__(self):
+        return "<User('%s')>" % (self.name)

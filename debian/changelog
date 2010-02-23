@@ -1,3 +1,9 @@
+python-ion (0.5.0) dev; urgency=high
+
+  * Change ORM to SqlAlchemy
+
+ -- Bernardo Heynemann and Marcio Duarte <heynemann@gmail.com>  Tue, 23 Feb 2010 10:23:00 -0300
+ 
 python-ion (0.4.4) dev; urgency=low
 
   * Fixes issue with threading.
