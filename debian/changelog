@@ -1,3 +1,9 @@
+python-ion (0.5.3) dev; urgency=low
+
+  * Now, if a nose.cfg file exists inside the tests root folder (/unit or /functional), Ion will use it for running the tests.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Thu, 04 Mar 2010 17:00:00 -0300
+
 python-ion (0.5.2) dev; urgency=low
 
   * Allow Template Filters.
