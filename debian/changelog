@@ -1,3 +1,9 @@
+python-ion (0.5.6) dev; urgency=high
+
+  * Fixed healthcheck.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Thu, 08 Mar 2010 17:50:00 -0300
+
 python-ion (0.5.5) dev; urgency=low
 
   * Minor fixes over 0.5.4.
