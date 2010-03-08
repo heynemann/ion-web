@@ -1,3 +1,9 @@
+python-ion (0.5.4) dev; urgency=low
+
+  * The config file now allows for a threads=x under [Ion], where x is the number of threads cherrypy will use to serve requests.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Thu, 04 Mar 2010 17:00:00 -0300
+
 python-ion (0.5.3) dev; urgency=low
 
   * Now, if a nose.cfg file exists inside the tests root folder (/unit or /functional), Ion will use it for running the tests.
