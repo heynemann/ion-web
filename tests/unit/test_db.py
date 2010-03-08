@@ -31,28 +31,32 @@ def test_db_is_not_connected_by_default():
 
     assert not db.is_connected
 
-connection_context = Fake('context').has_attr(settings=Fake('Settings'))
-connection_context.settings.has_attr(Db=Fake('Db'))
-connection_context.settings.Db.has_attr(host="host", user="user", password="pass", database="name", protocol="mysql", port=20)
+fake_conn_str = "connstr"
+connection_context = Fake('server')
 
-database_fake = Fake('database')
-create_database = Fake(callable=True).with_args("mysql://user:pass@host:20/name").returns(database_fake)
-
-fake_store = Fake(callable=True).with_args(database_fake)
+fake_session = Fake('session')
+fake_engine = Fake('engine')
+fake_create_engine = Fake(callable=True).with_args("connstr", echo=False, convert_unicode=True).returns(fake_engine)
 
 @with_fakes
-@with_patched_object(db, "create_database", create_database)
-@with_patched_object(db, "Store", fake_store)
+@with_patched_object(db, "create_engine", fake_create_engine)
+@with_patched_object(db, "session", fake_session)
+@with_patched_object(Db, "connstr", fake_conn_str)
 def test_can_connect_to_db():
+    clear_expectations()
+
     db = Db(connection_context)
 
     db.connect()
     assert db.is_connected
 
 @with_fakes
-@with_patched_object(db, "create_database", create_database)
-@with_patched_object(db, "Store", fake_store)
+@with_patched_object(db, "create_engine", fake_create_engine)
+@with_patched_object(db, "session", fake_session)
+@with_patched_object(Db, "connstr", fake_conn_str)
 def test_connecting_twice_raises():
+    clear_expectations()
+
     db = Db(connection_context)
 
     db.connect()
@@ -66,9 +70,12 @@ def test_connecting_twice_raises():
     assert False, "Should not have gotten this far"
 
 @with_fakes
-@with_patched_object(db, "create_database", create_database)
-@with_patched_object(db, "Store", fake_store)
+@with_patched_object(db, "create_engine", fake_create_engine)
+@with_patched_object(db, "session", fake_session)
+@with_patched_object(Db, "connstr", fake_conn_str)
 def test_disconnecting_from_not_connected_raises():
+    clear_expectations()
+
     db = Db(connection_context)
 
     try:
@@ -79,15 +86,16 @@ def test_disconnecting_from_not_connected_raises():
 
     assert False, "Should not have gotten this far"
 
-
-closable_store = Fake('closable_store')
-closable_store.expects('close')
-store2 = Fake(callable=True).with_args(database_fake).returns(closable_store)
+closable_session = Fake('closable_session')
+closable_session.expects('close')
 
 @with_fakes
-@with_patched_object(db, "create_database", create_database)
-@with_patched_object(db, "Store", store2)
+@with_patched_object(db, "create_engine", fake_create_engine)
+@with_patched_object(db, "session", closable_session)
+@with_patched_object(Db, "connstr", fake_conn_str)
 def test_disconnection_calls_close():
+    clear_expectations()
+
     db = Db(connection_context)
 
     db.connect()
@@ -95,9 +103,12 @@ def test_disconnection_calls_close():
     assert not db.is_connected
 
 @with_fakes
-@with_patched_object(db, "create_database", create_database)
-@with_patched_object(db, "Store", store2)
+@with_patched_object(db, "create_engine", fake_create_engine)
+@with_patched_object(db, "session", closable_session)
+@with_patched_object(Db, "connstr", fake_conn_str)
 def test_disconnection_sets_store_to_null():
+    clear_expectations()
+
     db = Db(connection_context)
 
     db.connect()
@@ -105,13 +116,17 @@ def test_disconnection_sets_store_to_null():
     assert not db.store
 
 @with_fakes
-@with_patched_object(db, "create_database", create_database)
-@with_patched_object(db, "Store", store2)
+@with_patched_object(db, "create_engine", fake_create_engine)
+@with_patched_object(db, "session", closable_session)
+@with_patched_object(Db, "connstr", fake_conn_str)
 def test_disconnecting_twice_raises():
+    clear_expectations()
+
     db = Db(connection_context)
 
     db.connect()
     db.disconnect()
+
     try:
         db.disconnect()
     except RuntimeError, err:

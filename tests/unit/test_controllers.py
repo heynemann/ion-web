@@ -141,6 +141,7 @@ def test_render_template():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
+    ctrl.server.template_filters = {}
     ctrl.server.has_attr(context=template_context)
     content = ctrl.render_template("some_file.html", some="args")
 
@@ -164,6 +165,7 @@ def test_render_template_in_folder_without_package():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
+    ctrl.server.template_filters = {}
     ctrl.server.context = template_context2
 
     content = ctrl.render_template("some_file.html", some="args")
@@ -188,17 +190,17 @@ def test_render_template_in_folder_with_null_package():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
+    ctrl.server.template_filters = {}
     ctrl.server.context = template_context3
     content = ctrl.render_template("some_file.html", some="args")
 
     assert content == "expected"
 
-fake_thread_data = Fake('thread_data')
-fake_thread_data.has_attr(store="store")
+fake_session = "store"
 
 @with_fakes
-@with_patched_object(ctrl, "thread_data", fake_thread_data)
-def test_controller_returns_store_from_cherrypy_thread_data():
+@with_patched_object(ctrl, "session", fake_session)
+def test_controller_returns_store_from_sqlalchemy_tool_session():
     clear_expectations()
     clear()
 
@@ -368,22 +370,6 @@ def test_logging_calls_cherrypy_log_if_verbose_is_true():
     ctrl.server.context.settings.Ion.expects('as_bool').with_args('verbose').returns(True)
 
     ctrl.log('bla')
-
-@with_fakes
-def test_getting_an_unitialized_store_gives_a_proper_message():
-    clear_expectations()
-    clear()
-
-    ctrl = Controller()
-
-    try:
-        store = ctrl.store
-    except ValueError, err:
-        msg = str(err)
-        assert msg == "The current controller does not have a configured store. Did you, by any chance, forgot to pass it to the controller in a test?"
-        return False
-
-    assert False, "should not have gotten this far"
 
 email_fake_server = Fake('server')
 email_render_template = Fake(callable=True).with_args("email.html", some="argument").returns("some_body")

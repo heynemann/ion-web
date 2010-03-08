@@ -19,6 +19,7 @@ import sys
 import os
 
 from MySQLdb import OperationalError
+from sqlalchemy.exc import DBAPIError
 from fudge import Fake, with_fakes, with_patched_object, clear_expectations
 from fudge.inspector import arg
 
@@ -138,6 +139,12 @@ def test_server_start_calls_run_server():
 settings_context = Fake('context').has_attr(settings=Fake('settings'))
 settings_context.settings.has_attr(Ion=Fake('ion'))
 settings_context.settings.Ion.has_attr(host="somehost", port="4728", baseurl="http://some.url:4728", verbose="True", media_path="other")
+settings_context.settings.Ion.expects('as_int').with_args('port').returns(4728)
+settings_context.settings.Ion.next_call('as_int').with_args('threads').returns(10)
+settings_context.settings.Ion.expects('as_bool').with_args('verbose').returns(True)
+settings_context.settings.Db = Fake('db')
+settings_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="1234", database="database")
+
 def test_get_server_settings():
     clear()
     server = Server(root_dir="some", context=settings_context)
@@ -147,14 +154,14 @@ def test_get_server_settings():
     expected_settings = {
                    'server.socket_host': "somehost",
                    'server.socket_port': 4728,
+                   'server.thread_pool': 10,
                    'request.base': "http://some.url:4728",
                    'tools.encode.on': True, 
                    'tools.encode.encoding': 'utf-8',
                    'tools.decode.on': True,
                    'tools.trailing_slash.on': True,
                    'log.screen': True,
-                   'tools.sessions.on': True,
-                   'tools.storm.on': True
+                   'tools.sessions.on': True
                }
 
     assert server_settings == expected_settings
@@ -171,6 +178,10 @@ def test_get_mounts():
             '/': {
                 'request.dispatch': "dispatcher",
                 'tools.staticdir.root': "some",
+                'tools.SATransaction.on': True,
+                'tools.SATransaction.dburi':"protocol://user:password@host:1234/database", 
+                'tools.SATransaction.echo': True,
+                'tools.SATransaction.convert_unicode':True
             },
             '/media': {
                 'tools.staticdir.on': True,
@@ -183,6 +194,10 @@ def test_get_mounts():
 alternate_context = Fake('context').has_attr(settings=Fake('settings'))
 alternate_context.settings.has_attr(Ion=Fake('ion'))
 alternate_context.settings.Ion.has_attr(host="somehost", port="4728", baseurl="http://some.url:4728", verbose="True", media_path="")
+alternate_context.settings.Db = Fake('db')
+alternate_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="1234", database="database")
+alternate_context.settings.Ion.expects('as_bool').with_args('verbose').returns(True)
+
 def test_get_mounts_without_specific_media_path():
     clear()
     server = Server(root_dir="some", context=alternate_context)
@@ -195,6 +210,10 @@ def test_get_mounts_without_specific_media_path():
             '/': {
                 'request.dispatch': "dispatcher",
                 'tools.staticdir.root': "some",
+                'tools.SATransaction.on': True,
+                'tools.SATransaction.dburi':"protocol://user:password@host:1234/database", 
+                'tools.SATransaction.echo': True,
+                'tools.SATransaction.convert_unicode':True
             },
             '/media': {
                 'tools.staticdir.on': True,
@@ -275,7 +294,7 @@ def test_run_server_updates_config_and_starts_cherrypy():
 test_db_false = Fake(callable=True).returns(False)
 custom_config_2 = Fake('config')
 custom_config_2.expects('update').with_args({"some":"settings"})
-custom_config_2.next_call('update').with_args({"tools.storm.on":False})
+custom_config_2.next_call('update').with_args({'tools.SATransaction.on': False})
 
 @with_fakes
 @with_patched_object("cherrypy", "config", custom_config_2)
@@ -286,7 +305,7 @@ custom_config_2.next_call('update').with_args({"tools.storm.on":False})
 @with_patched_object(Server, "get_mounts", fake_get_mounts)
 @with_patched_object(Server, "import_controllers", fake_import_controllers)
 @with_patched_object(Server, "test_connection", test_db_false)
-def test_run_server_updates_config_to_not_use_storm_when_test_db_fails():
+def test_run_server_updates_config_to_not_use_sqlalchemy_when_test_db_fails():
     clear()
 
     server = Server(root_dir="some", context=None)
@@ -312,89 +331,48 @@ def test_server_stop_should_publish_on_before_and_after_server_stop_event():
 
     server.stop()
 
-fake_db = Fake('db')
-fake_db.expects('connect')
-fake_db.expects('disconnect')
-db_engine = Fake(callable=True).with_args(None).returns(fake_db)
+fake_app = Fake('app')
+fake_session = Fake('session')
+fake_configure_session = Fake(callable=True).with_args(fake_app)
 
 @with_fakes
-@with_patched_object(ion.server, "Db", db_engine)
+@with_patched_object(ion.server, "session", fake_session)
+@with_patched_object(ion.server, "configure_session_for_app", fake_configure_session)
 def test_server_test_connection():
     clear_expectations()
     server = Server(root_dir="some")
     server.context = None
+    server.app = fake_app
+
+    fake_session.expects('execute').with_args('select 1 from dual').returns(True)
 
     server.test_connection()
 
-fake_db2 = Fake('db')
-fake_db2.expects('connect').raises(OperationalError("Error"))
-db_engine2 = Fake(callable=True).with_args(None).returns(fake_db2)
 cherrypy_logging_fake = Fake('cherrypy')
 
+fake_session2 = Fake('session')
+fake_configure_session2 = Fake(callable=True).with_args(fake_app)
+
 @with_fakes
-@with_patched_object(ion.server, "Db", db_engine2)
 @with_patched_object(ion.server, "cherrypy", cherrypy_logging_fake)
+@with_patched_object(ion.server, "session", fake_session2)
+@with_patched_object(ion.server, "configure_session_for_app", fake_configure_session2)
 def test_server_logs_error_when_no_connection_can_be_made():
     clear()
 
+    fake_session2.expects('execute').with_args('select 1 from dual').raises(DBAPIError(None, None, None, None))
+
     cherrypy_logging_fake.has_attr(log = Fake('logging'))
-    cherrypy_logging_fake.log.expects('error').with_args('''\n\n============================ IMPORTANT ERROR ============================\nNo connection to the database could be made with the supplied parameters.\nPLEASE VERIFY YOUR CONFIG.INI FILE AND CHANGE IT ACCORDINGLY.\n=========================================================================\n\n''', 'STORM')
+    cherrypy_logging_fake.log.expects('error').with_args('''\n\n============================ IMPORTANT ERROR ============================\nNo connection to the database could be made with the supplied parameters.\nPLEASE VERIFY YOUR CONFIG.INI FILE AND CHANGE IT ACCORDINGLY.\n=========================================================================\n\n''', 'DB')
 
     server = Server(root_dir="some")
+    server.app = fake_app
     server.context = None
 
     server.test_connection()
 
 fake_thread_data = Fake('thread_data')
 fake_cherrypy = Fake('cherrypy').has_attr(thread_data=fake_thread_data)
-
-fake_database = Fake('database')
-fake_create_database = Fake(callable=True).with_args("protocol://user:password@host:10/database").returns(fake_database)
-
-fake_store = Fake(callable=True).with_args(fake_database).returns("store")
-
-@with_fakes
-@with_patched_object(ion.server, "cherrypy", fake_cherrypy)
-@with_patched_object(ion.server, "create_database", fake_create_database)
-@with_patched_object(ion.server, "Store", fake_store)
-def test_server_connect_db():
-    clear_expectations()
-    server = Server(root_dir="some", context=default_context)
-
-    server.connect_db(1)
-
-    assert server.storm_stores[1] == "store"
-
-fake_log = Fake(callable=True).with_args("Cleaning up store.", "STORM")
-fake_db3 = Fake('db')
-fake_db3.is_connected = True
-fake_db3.expects('disconnect')
-fake_store = Fake('store')
-fake_store.expects('close')
-@with_fakes
-@with_patched_object(ion.server.cherrypy, "log", fake_log)
-def test_server_disconnect_db():
-    clear_expectations()
-    server = Server(root_dir="some")
-    server.context = None
-    server.db = fake_db3
-    server.storm_stores[1] = fake_store
-
-    server.disconnect_db(1)
-
-fake_log2 = Fake(callable=True).with_args("Could not find store.", "STORM")
-fake_db4 = Fake('db')
-fake_db4.is_connected = True
-fake_db4.expects('disconnect')
-@with_fakes
-@with_patched_object(ion.server.cherrypy, "log", fake_log2)
-def test_server_disconnect_db_logs_when_no_store_found():
-    clear_expectations()
-    server = Server(root_dir="some")
-    server.context = None
-    server.db = fake_db4
-
-    server.disconnect_db(1)
 
 import_context2 = Fake('context').has_attr(settings=Fake('settings'))
 import_context2.settings.has_attr(Ion=Fake('ion'))
