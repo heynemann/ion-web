@@ -450,3 +450,48 @@ def test_healthcheck_action_fails_if_database_not_found():
 
     assert False, "Should not have reached this far."
 
+@with_fakes
+def test_controller_cache_is_server_cache():
+    clear_expectations()
+    clear()
+
+    fake_server = Fake('server')
+    fake_server.cache = "cache"
+
+    controller = Controller()
+    controller.server = fake_server
+
+    assert controller.cache == "cache"
+
+def test_controller_settings_returns_none_if_no_server():
+    controller = Controller()
+    assert not controller.settings
+
+template_loader2 = Fake('template_loader 2')
+template_loader2.filters = {}
+environment2 = Fake(callable=True).with_args(loader=arg.any_value()).returns(template_loader2)
+package_loader2 = Fake(callable=True).with_args("template_path")
+
+template_fake2 = Fake('template')
+template_loader2.expects('get_template').with_args('template_file').returns(template_fake2)
+template_fake2.expects('render').with_args(user=None, settings=arg.any_value()).returns("expected")
+
+fake_settings_template_filter = Fake('settings')
+@with_fakes
+@with_patched_object(ctrl, "Environment", environment2)
+@with_patched_object(ctrl, "FileSystemLoader", package_loader2)
+@with_patched_object(Controller, "settings", fake_settings_template_filter)
+def test_render_template_uses_all_server_template_filters():
+    clear_expectations()
+    clear()
+
+    fake_server = Fake('server')
+    fake_server.template_path = "template_path"
+    fake_server.template_filters = {"some":lambda x: "y"}
+
+    controller = Controller()
+    controller.server = fake_server
+
+    result = controller.render_template("template_file")
+
+    assert result == "expected"
