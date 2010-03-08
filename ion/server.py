@@ -191,9 +191,10 @@ class Server(object):
         configure_session_for_app(self.app)
         try:
             session.execute("select 1 from dual")
-        except DBAPIError:
+        except DBAPIError, err:
             msg = '''\n\n============================ IMPORTANT ERROR ============================\nNo connection to the database could be made with the supplied parameters.\nPLEASE VERIFY YOUR CONFIG.INI FILE AND CHANGE IT ACCORDINGLY.\n=========================================================================\n\n'''
             cherrypy.log.error(msg, 'DB')
+            self.test_connection_error = err
             return False
         return True
 
