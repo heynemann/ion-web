@@ -1,3 +1,9 @@
+python-ion (0.5.5) dev; urgency=low
+
+  * Minor fixes over 0.5.4.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Thu, 08 Mar 2010 16:00:00 -0300
+
 python-ion (0.5.4) dev; urgency=low
 
   * The config file now allows for a threads=x under [Ion], where x is the number of threads cherrypy will use to serve requests.
