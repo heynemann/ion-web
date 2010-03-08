@@ -27,6 +27,7 @@ from sqlalchemy_tool import metadata, session, mapper, configure_session_for_app
 from ion.context import Context
 from ion.cache import Cache
 from sqlalchemy.exc import DBAPIError
+import logging
 
 class ServerStatus(object):
     Unknown = 0
@@ -60,8 +61,9 @@ class Server(object):
         self.cache = Cache(size=1000, age="5s", log=cherrypy.log)
 
         if self.context.settings.Ion.as_bool('debug'):
-            from storm.tracer import debug
-            debug(True, stream=sys.stdout)
+            logging.basicConfig()
+            logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+            logging.getLogger('sqlalchemy.orm.unitofwork').setLevel(logging.DEBUG)
 
         self.import_template_filters()
         self.import_controllers()
