@@ -69,8 +69,8 @@ class Server(object):
         self.import_template_filters()
         self.import_controllers()
 
-        if self.config.settings.Ion.PidFile:
-            p = PIDFile(cherrypy.engine, self.config.settings.Ion.PidFile)
+        if self.context.settings.Ion.PidFile:
+            p = PIDFile(cherrypy.engine, self.context.settings.Ion.PidFile)
             p.subscribe()
 
         self.run_server(non_block)
