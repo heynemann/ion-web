@@ -21,6 +21,7 @@ from os.path import join, abspath, dirname, splitext, split, exists
 import inspect
 
 import cherrypy
+from cherrypy.process.plugins import PIDFile
 
 from ion.controllers import Controller
 from sqlalchemy_tool import metadata, session, mapper, configure_session_for_app
@@ -67,6 +68,10 @@ class Server(object):
 
         self.import_template_filters()
         self.import_controllers()
+
+        if self.config.settings.Ion.PidFile:
+            p = PIDFile(cherrypy.engine, self.config.settings.Ion.PidFile)
+            p.subscribe()
 
         self.run_server(non_block)
 
