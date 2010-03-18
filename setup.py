@@ -48,7 +48,6 @@ setup(
         "cherrypy",
         "jinja2",
         "sqlalchemy",
-        "sqlalchemy-migrate",
         "routes",
         "nose"
     ],
