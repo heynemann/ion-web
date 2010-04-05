@@ -35,7 +35,7 @@ def test_can_render_template_from_null_template_folder():
     class TemplateFolderController(Controller):
         pass
 
-    server = ServerHelper(root_dir, 'controller_config1.ini', apps=['tests.functional'])
+    server = ServerHelper(root_dir, 'controller_config1.ini')
 
     controller = server.ctrl(TemplateFolderController)
     content = controller.render_template('test_template.html')
@@ -48,7 +48,7 @@ def test_healthcheck_returns_working_when_no_text_found_in_config():
     class HealthCheckController(Controller):
         pass
 
-    server = ServerHelper(root_dir, 'controller_config3.ini', apps=['tests.functional'])
+    server = ServerHelper(root_dir, 'controller_config3.ini')
 
     controller = server.ctrl(HealthCheckController)
 
@@ -62,7 +62,7 @@ def test_healthcheck_returns_custom_string_when_no_text_found_in_config():
     class HealthCheckController(Controller):
         pass
 
-    server = ServerHelper(root_dir, 'controller_config1.ini', apps=['tests.functional'])
+    server = ServerHelper(root_dir, 'controller_config1.ini')
 
     controller = server.ctrl(HealthCheckController)
 

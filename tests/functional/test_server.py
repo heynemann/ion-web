@@ -32,7 +32,7 @@ config_path = 'config.ini'
 
 def test_server_can_start():
     clear()
-    server = Server(root_dir=root_dir, apps=['tests.functional'])
+    server = Server(root_dir=root_dir)
     try:
         server.start(config_path=config_path, non_block=True)
 
@@ -48,7 +48,7 @@ def test_server_responds_for_controller_action():
         def SomeAction(self):
             return "Hello World"
 
-    server = Server(root_dir=root_dir, apps=['tests.functional'])
+    server = Server(root_dir=root_dir)
 
     try:
         server.start(config_path=config_path, non_block=True)
@@ -66,7 +66,7 @@ def test_server_responds_for_healthcheck_action():
     class TestController(Controller):
         pass
 
-    server = Server(root_dir=root_dir, apps=['tests.functional'])
+    server = Server(root_dir=root_dir)
 
     try:
         server.start(config_path=config_path, non_block=True)

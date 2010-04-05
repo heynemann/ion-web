@@ -41,20 +41,13 @@ class ServerStatus(object):
 class Server(object):
     imp = __import__
 
-    def __init__(self, root_dir, apps=[], context=None):
+    def __init__(self, root_dir, context=None):
         self.status = ServerStatus.Unknown
         self.root_dir = root_dir
         self.context = context or Context(root_dir=root_dir)
         self.template_filters = {}
         self.test_connection_error = None
         self.cache = None
-        self.apps = apps
-
-    @property
-    def template_path(self):
-        templ_path = self.context.settings.Ion.template_path.lstrip("/")
-        templ_path = templ_path and abspath(join(self.root_dir, templ_path)) or abspath(join(self.root_dir, 'templates'))
-        return templ_path
 
     def load_apps(self, app_string):
         self.apps = [app.strip() for app in app_string.strip().split('\n')]
