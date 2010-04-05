@@ -18,7 +18,7 @@
 import os
 from os.path import split, abspath, join, dirname
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import Environment, FileSystemLoader, PackageLoader, ChoiceLoader
 import cherrypy
 from cherrypy import thread_data
 
@@ -143,9 +143,15 @@ class Controller(object):
             dispatcher.connect(route_name, route[1]["route"], controller=self, action=route[1]["method"])
 
     def render_template(self, template_file, **kw):
-        template_path = self.server.template_path
+        apps = self.server.apps
 
-        env = Environment(loader=FileSystemLoader(template_path))
+        app_loaders = []
+        for app in apps:
+            app_loaders.append(PackageLoader(app))
+
+        loader = ChoiceLoader(app_loaders)
+
+        env = Environment(loader=loader)
 
         for filter_name in self.server.template_filters.keys():
             env.filters[filter_name] = self.server.template_filters[filter_name]

@@ -7,8 +7,8 @@ from ion import Server, ServerStatus, Context
 
 class ServerHelper (object):
 
-    def __init__(self, root_path, config_path):
-        self.server = Server(root_path)
+    def __init__(self, root_path, config_path, apps=['tests.functional']):
+        self.server = Server(root_path, apps=apps)
 
         self.server.start(config_path, non_block=True)
 
