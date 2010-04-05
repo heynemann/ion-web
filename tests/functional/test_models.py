@@ -38,6 +38,11 @@ def test_save_and_render_user_model():
     class TemplateFolderController(Controller):
         @route("/")
         def some_action(self):
+            all_users = self.store.query(User).all()
+            for user in all_users:
+                self.store.delete(user)
+            self.store.commit()
+
             user = User("someone")
             self.store.add(user)
 
