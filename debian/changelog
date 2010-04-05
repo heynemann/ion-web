@@ -1,3 +1,9 @@
+python-ion (0.5.8) dev; urgency=low
+
+  * Several bug fixes.
+
+ -- Bernardo Heynemann <heynemann@gmail.com>  Wed, 5 Apr 2010 17:59:00 -0300
+
 python-ion (0.5.7) dev; urgency=low
 
   * Added option in config.ini file to specify the pid file for cherrypy.
