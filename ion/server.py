@@ -40,7 +40,7 @@ class ServerStatus(object):
 class Server(object):
     imp = __import__
 
-    def __init__(self, root_dir, apps, context=None):
+    def __init__(self, root_dir, apps=[], context=None):
         self.status = ServerStatus.Unknown
         self.root_dir = root_dir
         self.context = context or Context(root_dir=root_dir)
@@ -55,12 +55,17 @@ class Server(object):
         templ_path = templ_path and abspath(join(self.root_dir, templ_path)) or abspath(join(self.root_dir, 'templates'))
         return templ_path
 
+    def load_apps(self, app_string):
+        self.apps = [app.strip() for app in app_string.strip().split('\n')]
+
     def start(self, config_path, non_block=False):
         self.status = ServerStatus.Starting
         self.publish('on_before_server_start', {'server':self, 'context':self.context})
 
         self.context.load_settings(abspath(join(self.root_dir, config_path)))
         self.cache = Cache(size=1000, age="5s", log=cherrypy.log)
+
+        self.load_apps(self.context.settings.Ion.apps)
 
         if self.context.settings.Ion.as_bool('debug'):
             logging.basicConfig()
@@ -88,7 +93,7 @@ class Server(object):
 
     def import_controllers(self):
         for app in self.apps:
-            Server.imp(app)
+            Server.imp(app + '.controllers')
 
     def stop(self):
         self.status = ServerStatus.Stopping
