@@ -35,7 +35,6 @@ def clear():
 
 def test_index_action_returns_overriden_template():
     clear()
-    import pdb;pdb.set_trace()
     server = ServerHelper(root_dir, 'config.ini')
 
     try:
