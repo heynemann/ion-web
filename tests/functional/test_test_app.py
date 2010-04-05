@@ -43,3 +43,14 @@ def test_index_action_returns_overriden_template():
         assert "TEMPLATE OVERRIDING WORKS" in content
     finally:
         server.stop()
+
+def test_returns_overriden_media():
+    clear()
+    server = ServerHelper(root_dir, 'config.ini')
+
+    try:
+        exit_code, content = HttpClient.get('http://localhost:8082/media/css/readme.rst')
+        assert exit_code == 200
+        assert content.strip() == u"Other readme!", content.strip()
+    finally:
+        server.stop()
