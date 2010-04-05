@@ -94,6 +94,7 @@ class Server(object):
         self.publish('on_before_server_stop', {'server':self, 'context':self.context})
 
         cherrypy.engine.exit()
+        cherrypy.server.httpserver = None
 
         self.status = ServerStatus.Stopped
         self.publish('on_after_server_stop', {'server':self, 'context':self.context})

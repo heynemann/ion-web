@@ -37,10 +37,13 @@ def test_can_render_template_from_null_template_folder():
 
     server = ServerHelper(root_dir, 'controller_config1.ini')
 
-    controller = server.ctrl(TemplateFolderController)
-    content = controller.render_template('test_template.html')
+    try:
+        controller = server.ctrl(TemplateFolderController)
+        content = controller.render_template('test_template.html')
 
-    assert content == "Hello World"
+        assert content == "Hello World"
+    finally:
+        server.stop()
 
 def test_healthcheck_returns_working_when_no_text_found_in_config():
     clear()
@@ -50,11 +53,14 @@ def test_healthcheck_returns_working_when_no_text_found_in_config():
 
     server = ServerHelper(root_dir, 'controller_config3.ini')
 
-    controller = server.ctrl(HealthCheckController)
+    try:
+        controller = server.ctrl(HealthCheckController)
 
-    content = controller.healthcheck()
+        content = controller.healthcheck()
 
-    assert content == "WORKING"
+        assert content == "WORKING"
+    finally:
+        server.stop()
 
 def test_healthcheck_returns_custom_string_when_no_text_found_in_config():
     clear()
@@ -64,9 +70,12 @@ def test_healthcheck_returns_custom_string_when_no_text_found_in_config():
 
     server = ServerHelper(root_dir, 'controller_config1.ini')
 
-    controller = server.ctrl(HealthCheckController)
+    try:
+        controller = server.ctrl(HealthCheckController)
 
-    content = controller.healthcheck()
+        content = controller.healthcheck()
 
-    assert content == "CUSTOMTEXT"
+        assert content == "CUSTOMTEXT"
+    finally:
+        server.stop()
 
