@@ -87,15 +87,8 @@ class Server(object):
                     self.template_filters[name] = func
 
     def import_controllers(self):
-        controller_path = self.context.settings.Ion.controllers_path
-        controller_path = controller_path.lstrip("/") or "controllers"
-        controller_path = abspath(join(self.root_dir, controller_path))
-
-        sys.path.append(controller_path)
-
-        for filename in os.listdir(controller_path):
-            if filename.endswith(".py"):
-                Server.imp(splitext(filename)[0])
+        for app in self.apps:
+            Server.imp(app)
 
     def stop(self):
         self.status = ServerStatus.Stopping
