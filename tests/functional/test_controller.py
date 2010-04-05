@@ -42,20 +42,6 @@ def test_can_render_template_from_null_template_folder():
 
     assert content == "Hello World"
 
-def test_can_render_template_from_specific_template_folder():
-    clear()
-
-    class TemplateFolderController(Controller):
-        pass
-
-    server = ServerHelper(root_dir, 'controller_config2.ini', apps=['tests.functional.package'])
-
-    controller = server.ctrl(TemplateFolderController)
-
-    content = controller.render_template('test_template.html')
-
-    assert content == "Hello World 2"
-
 def test_healthcheck_returns_working_when_no_text_found_in_config():
     clear()
 

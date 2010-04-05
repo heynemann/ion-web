@@ -146,6 +146,7 @@ class Controller(object):
         apps = self.server.apps
 
         app_loaders = []
+
         for app in apps:
             app_loaders.append(PackageLoader(app))
 

@@ -21,6 +21,7 @@ from os.path import join, abspath, dirname, splitext, split, exists
 import inspect
 
 import cherrypy
+from cherrypy.lib.static import serve_file
 from cherrypy.process.plugins import PIDFile
 
 from ion.controllers import Controller
@@ -122,16 +123,6 @@ class Server(object):
 
     def get_mounts(self, dispatcher):
         sets = self.context.settings
-        media_path = sets.Ion.media_path
-
-        if not media_path:
-            media_dir = "media"
-            media_path = self.root_dir
-        else:
-            #REFACTOR
-            paths = split(media_path)
-            media_dir = paths[-1]
-            media_path = join(self.root_dir, join(*paths[:-1]).lstrip("/")).rstrip("/")
 
         protocol = self.context.settings.Db.protocol
         username = self.context.settings.Db.user
@@ -145,15 +136,10 @@ class Server(object):
         conf = {
             '/': {
                 'request.dispatch': dispatcher,
-                'tools.staticdir.root': media_path,
                 'tools.SATransaction.on': True,
                 'tools.SATransaction.dburi':conn_str, 
                 'tools.SATransaction.echo': sets.Ion.as_bool('verbose'),
                 'tools.SATransaction.convert_unicode': True
-            },
-            '/media': {
-                'tools.staticdir.on': True,
-                'tools.staticdir.dir': media_dir
             }
         }
 
@@ -162,10 +148,42 @@ class Server(object):
     def get_dispatcher(self):
         routes_dispatcher = cherrypy.dispatch.RoutesDispatcher()
 
+        class MediaController():
+            def __init__(self, apps):
+                self.apps = apps
+
+            def serve_media(self, media_url):
+                for app in self.apps:
+                    extension = splitext(media_url)[-1]
+                    app_module = reduce(getattr, app.split('.')[1:], __import__('testapp'))
+                    path = inspect.getfile(app_module)
+                    media_path = abspath(join("/".join(split(path)[:-1]), 'media', media_url))
+
+                    if exists(media_path):
+                        if extension == ".jpg":
+                            content_type = "image/jpeg"
+                        elif extension == ".gif":
+                            content_type = "image/gif"
+                        elif extension == ".png":
+                            content_type = "image/png"
+                        elif extension == ".js":
+                            content_type = "text/javascript"
+                        elif extension == ".css":
+                            content_type = "text/css"
+                        else:
+                            content_type = "text/plain"
+
+                        return serve_file(media_path, content_type=content_type)
+
+                raise cherrypy.HTTPError(404)
+
         for controller_type in Controller.all():
             controller = controller_type()
             controller.server = self
             controller.register_routes(routes_dispatcher)
+
+        media_controller = MediaController(self.apps)
+        routes_dispatcher.connect("media", "/media/{media_url:(.+)}", controller=media_controller, action="serve_media")
 
         route_name = "healthcheck"
         controller = Controller()
