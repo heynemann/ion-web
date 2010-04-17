@@ -31,7 +31,7 @@ functional: prepare_build run_functional report_success
 acceptance: prepare_build run_acceptance report_success
 
 clean:
-	@find -name *.pyc -delete
+	@find . -name *.pyc -delete
 
 # action targets
 
