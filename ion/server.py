@@ -164,6 +164,8 @@ class Server(object):
                             content_type = "text/javascript"
                         elif extension == ".css":
                             content_type = "text/css"
+                        elif extension.startswith('.htm'):
+                            content_type = "text/html"
                         else:
                             content_type = "text/plain"
 
