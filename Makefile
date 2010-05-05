@@ -18,20 +18,15 @@ nocoverage=false
 
 # orchestrator targets
 
-prepare_build: clean
-
-test: prepare_build
+test:
 	@echo "Running tests..."
 	@if [ "$(nocoverage)" = "true" ]; then nosetests -d -s --verbose ${tests_dir}; else nosetests -d -s --verbose --with-coverage --cover-package=ion --cover-erase --cover-inclusive ${tests_dir}; fi
 
-all: prepare_build test report_success
+all: test report_success
 
-unit: prepare_build run_unit report_success
-functional: prepare_build run_functional report_success
-acceptance: prepare_build run_acceptance report_success
-
-clean:
-	@find -name *.pyc -delete
+unit: run_unit report_success
+functional: run_functional report_success
+acceptance: run_acceptance report_success
 
 # action targets
 
@@ -61,3 +56,5 @@ deb:
 	python -c 'import os;os.system("debuild -tc")'
 	cp ../*ion*.deb ./releases
 	mv /tmp/ion_git .git
+create_db:
+	mysql -u root < create_db.sql

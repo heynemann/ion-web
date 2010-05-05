@@ -64,7 +64,8 @@ class Server(object):
         if self.context.settings.Ion.as_bool('debug'):
             logging.basicConfig()
             logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-            logging.getLogger('sqlalchemy.orm.unitofwork').setLevel(logging.DEBUG)
+            logging.getLogger('sqlalchemy.orm.unitofwork').\
+                                                    setLevel(logging.DEBUG)
 
         self.import_template_filters()
         self.import_controllers()
