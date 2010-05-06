@@ -29,28 +29,35 @@ root_dir = abspath(join(dirname(__file__), 'testapp'))
 sys.path.insert(0, root_dir)
 root_dir = join(root_dir, 'testapp')
 
-def clear():
-    ctrl.__CONTROLLERS__ = []
-    ctrl.__CONTROLLERSDICT__ = {}
-
 def test_index_action_returns_overriden_template():
-    clear()
     server = ServerHelper(root_dir, 'config.ini')
 
     try:
         exit_code, content = HttpClient.get('http://localhost:8082/')
         assert exit_code == 200
         assert "TEMPLATE OVERRIDING WORKS" in content
+
     finally:
         server.stop()
 
 def test_returns_overriden_media():
-    clear()
     server = ServerHelper(root_dir, 'config.ini')
 
     try:
-        exit_code, content = HttpClient.get('http://localhost:8082/media/css/readme.rst')
+        exit_code, content = \
+            HttpClient.get('http://localhost:8082/media/css/readme.rst')
         assert exit_code == 200
         assert content.strip() == u"Other readme!", content.strip()
+    finally:
+        server.stop()
+
+def test_template_filter_for_custom_app_is_loaded():
+    server = ServerHelper(root_dir, 'config.ini')
+
+    try:
+        exit_code, content = HttpClient.get('http://localhost:8082/hello')
+        assert exit_code == 200
+        assert "Hello Claudio" in content, \
+            "Should contain the text 'Hello Claudio'"
     finally:
         server.stop()

@@ -39,7 +39,15 @@ class ServerStatus(object):
     Stopped = 4
 
 class Server(object):
-    imp = __import__
+    @classmethod
+    def imp(cls, name):
+        try:
+            module = __import__(name)
+            if "." in name:
+                return reduce(getattr, name.split('.')[1:], module)
+            return module
+        except ImportError:
+            return None
 
     def __init__(self, root_dir, context=None):
         self.status = ServerStatus.Unknown
@@ -51,6 +59,13 @@ class Server(object):
 
     def load_apps(self, app_string):
         self.apps = [app.strip() for app in app_string.strip().split('\n')]
+        self.app_paths = {}
+        self.app_modules = {}
+
+        for app in self.apps:
+            self.app_modules[app] = Server.imp(app)
+            app_path = dirname(inspect.getfile(self.app_modules[app]))
+            self.app_paths[app] = app_path
 
     def start(self, config_path, non_block=False):
         self.status = ServerStatus.Starting
@@ -80,15 +95,19 @@ class Server(object):
         self.publish('on_after_server_start', {'server':self, 'context':self.context})
 
     def import_template_filters(self):
-        if exists(abspath(join(self.root_dir, "template_filters.py"))):
-            template_filters = Server.imp("template_filters")
-            for name, func in inspect.getmembers(template_filters):
-                if inspect.isfunction(func) and not name.startswith("_"):
-                    self.template_filters[name] = func
+
+        for app in self.apps:
+            template_filters_module = Server.imp("%s.template_filters" %app)
+            if template_filters_module:
+                for name, func in inspect.getmembers(template_filters_module):
+                    if inspect.isfunction(func) and not name.startswith("_"):
+                        self.template_filters[name] = func
 
     def import_controllers(self):
         for app in self.apps:
-            Server.imp(app + '.controllers')
+            ctrl_module = Server.imp(app + '.controllers')
+            if not ctrl_module:
+                raise RuntimeError('The app %s does not have a controllers module.' % app)
 
     def stop(self):
         self.status = ServerStatus.Stopping
@@ -96,6 +115,10 @@ class Server(object):
 
         cherrypy.engine.exit()
         cherrypy.server.httpserver = None
+
+        self.apps = None
+        self.app_paths = None
+        self.app_modules = None
 
         self.status = ServerStatus.Stopped
         self.publish('on_after_server_stop', {'server':self, 'context':self.context})

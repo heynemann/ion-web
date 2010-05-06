@@ -65,7 +65,8 @@ def authenticated(func):
 
 class MetaController(type):
     def __init__(cls, name, bases, attrs):
-        if name not in ('MetaController', 'Controller'):
+        if 'Controller' in [klass.__name__ for klass in bases]:
+            
             __CONTROLLERS__.append(cls)
             __CONTROLLERSDICT__[name] = cls
             cls.__routes__ = []
