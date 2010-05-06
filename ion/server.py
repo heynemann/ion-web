@@ -39,10 +39,12 @@ class ServerStatus(object):
     Stopped = 4
 
 class Server(object):
+    import_method = __import__
+
     @classmethod
     def imp(cls, name):
         try:
-            module = __import__(name)
+            module = cls.import_method(name)
             if "." in name:
                 return reduce(getattr, name.split('.')[1:], module)
             return module
@@ -58,7 +60,8 @@ class Server(object):
         self.cache = None
 
     def load_apps(self, app_string):
-        self.apps = [app.strip() for app in app_string.strip().split('\n')]
+        self.apps = [app.strip() for app in app_string.strip().split('\n') \
+         if app]
         self.app_paths = {}
         self.app_modules = {}
 
