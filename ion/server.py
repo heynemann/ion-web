@@ -44,13 +44,7 @@ class Server(object):
 
     @classmethod
     def imp(cls, name):
-        try:
-            module = import_module(name, import_method)
-            if "." in name:
-                return reduce(getattr, name.split('.')[1:], module)
-            return module
-        except ImportError:
-            return None
+        return import_module(name, Server.import_method)
 
     def __init__(self, root_dir, context=None):
         self.status = ServerStatus.Unknown
