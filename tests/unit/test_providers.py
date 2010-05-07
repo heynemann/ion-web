@@ -136,7 +136,7 @@ def test_create_project_provider_raises_value_error_on_no_project_name():
     try:
         prov.execute(None, None, None)
     except ValueError, err:
-        assert str(err) == "You need to pass the project name to be created"
+        assert str(err).strip() == "You need to pass the project name to be created", str(err).strip()
         return
 
     assert False, "Shouldn't reach this far"
