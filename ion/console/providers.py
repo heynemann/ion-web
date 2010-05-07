@@ -23,7 +23,7 @@ import inspect
 
 from ion.server import Server
 from ion.fs import *
-from ion import Version, Settings
+from ion import Version, Context
 
 def log(message):
     print message
@@ -160,11 +160,11 @@ class TestRunnerProvider(Provider):
             raise RuntimeError('Could not find config.ini file in this project, thus can\'t run unit tests')
         config_file = config_file[0]
 
-        sets = Settings(dirname(config_file))
-        sets.load()
+        context = Context(dirname(config_file))
+        context.load_settings('config.ini')
 
         tests_dirs = []
-        for app in sets.apps:
+        for app in context.apps:
             module = imp(app)
             module_path = dirname(inspect.getfile(module))
             
@@ -173,7 +173,7 @@ class TestRunnerProvider(Provider):
             else:
                 tests_dirs.append(join(module_path, "tests"))
 
-        self.run_nose(sets.apps,
+        self.run_nose(context.apps,
                       join(dirname(config_file), 'nose.cfg'),
                       tests_dirs, 
                       os.path.split(current_dir)[-1])

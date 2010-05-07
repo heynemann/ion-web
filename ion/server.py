@@ -55,7 +55,7 @@ class Server(object):
         self.cache = None
 
     def load_apps(self):
-        self.apps = self.context.settings.apps
+        self.apps = self.context.apps
         self.app_paths = {}
         self.app_modules = {}
 

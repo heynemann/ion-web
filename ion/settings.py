@@ -38,10 +38,6 @@ class Settings(object):
 
         return SettingsSection(self, name, self.config)
 
-    @property
-    def apps(self):
-        return [app for app in self.Ion.apps.strip().split('\n') if app]
-
 class SettingsSection(object):
     def __init__(self, settings, name, config):
         self.settings = settings

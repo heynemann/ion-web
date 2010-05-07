@@ -25,3 +25,7 @@ class Context(object):
 
     def load_settings(self, config_path):
         self.settings.load(config_path)
+
+    @property
+    def apps(self):
+        return [app for app in self.settings.Ion.apps.strip().split('\n') if app]
