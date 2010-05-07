@@ -61,3 +61,13 @@ def remove_file(path):
 def is_file(path):
     return isfile(path)
 
+def imp(name, import_method=None):
+    if not import_method:
+        import_method = __import__
+    try:
+        module = import_method(name)
+        if "." in name:
+            return reduce(getattr, name.split('.')[1:], module)
+        return module
+    except ImportError:
+        return None

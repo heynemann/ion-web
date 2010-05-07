@@ -28,6 +28,7 @@ from ion.controllers import Controller
 from sqlalchemy_tool import metadata, session, mapper, configure_session_for_app
 from ion.context import Context
 from ion.cache import Cache
+from ion.fs import imp as import_module
 from sqlalchemy.exc import DBAPIError
 import logging
 
@@ -44,7 +45,7 @@ class Server(object):
     @classmethod
     def imp(cls, name):
         try:
-            module = cls.import_method(name)
+            module = import_module(name, import_method)
             if "." in name:
                 return reduce(getattr, name.split('.')[1:], module)
             return module
@@ -59,9 +60,8 @@ class Server(object):
         self.test_connection_error = None
         self.cache = None
 
-    def load_apps(self, app_string):
-        self.apps = [app.strip() for app in app_string.strip().split('\n') \
-         if app]
+    def load_apps(self):
+        self.apps = self.context.settings.apps
         self.app_paths = {}
         self.app_modules = {}
 
@@ -77,7 +77,7 @@ class Server(object):
         self.context.load_settings(abspath(join(self.root_dir, config_path)))
         self.cache = Cache(size=1000, age="5s", log=cherrypy.log)
 
-        self.load_apps(self.context.settings.Ion.apps)
+        self.load_apps()
 
         if self.context.settings.Ion.as_bool('debug'):
             logging.basicConfig()

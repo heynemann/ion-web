@@ -19,10 +19,11 @@ import sys
 import os
 from os.path import join, dirname, abspath, exists
 from string import Template
+import inspect
 
 from ion.server import Server
 from ion.fs import *
-from ion import Version
+from ion import Version, Settings
 
 def log(message):
     print message
@@ -81,7 +82,7 @@ class CreateProjectProvider(Provider):
 
     def execute(self, current_dir, options, args):
         if not args or not args[0]:
-            raise ValueError("You need to pass the project name to be created")
+            raise ValueError(" You need to pass the project name to be created")
 
         project_name = args[0]
 
@@ -123,14 +124,11 @@ class TestRunnerProvider(Provider):
     def __init__(self, key=None):
         super(TestRunnerProvider, self).__init__(key or "test")
 
-    def run_nose(self, path, project_name):
+    def run_nose(self, apps, config_path, paths, project_name):
         from nose.core import run
         from nose.config import Config
 
         argv = ["-d", "-s", "--verbose"]
-
-        if exists(join(path, 'nose.cfg')):
-            argv.append("--config=%s" % (join(path, 'nose.cfg')))
 
         use_coverage = True
         try:
@@ -142,29 +140,55 @@ class TestRunnerProvider(Provider):
         except ImportError:
             pass
 
-        argv.append(path)
+        if exists(config_path):
+            argv.append("--config=%s" % config_path)
+
+        for path in paths:
+            argv.append(path)
+            
+        if use_coverage:
+            for app in apps:
+                argv.append("--cover-package=%s" % app)
 
         result = run(argv=argv)
         if not result:
             sys.exit(1)
 
-    def execute(self, current_dir, options, args):
-        tests_dir = join(current_dir, "tests")
-        self.run_nose(tests_dir, os.path.split(current_dir)[-1])
+    def execute(self, current_dir, options, args, complement_dir=None):
+        config_file = locate('config.ini')
+        if not config_file:
+            raise RuntimeError('Could not find config.ini file in this project, thus can\'t run unit tests')
+        config_file = config_file[0]
+
+        sets = Settings(dirname(config_file))
+        sets.load()
+
+        tests_dirs = []
+        for app in sets.apps:
+            module = imp(app)
+            module_path = dirname(inspect.getfile(module))
+            
+            if complement_dir:
+                tests_dirs.append(join(module_path, "tests", complement_dir))
+            else:
+                tests_dirs.append(join(module_path, "tests"))
+
+        self.run_nose(sets.apps,
+                      join(dirname(config_file), 'nose.cfg'),
+                      tests_dirs, 
+                      os.path.split(current_dir)[-1])
 
 class UnitTestProvider(TestRunnerProvider):
     def __init__(self):
         super(UnitTestProvider, self).__init__("unit")
 
     def execute(self, current_dir, options, args):
-        tests_dir = join(current_dir, "tests", "unit")
-        self.run_nose(tests_dir, os.path.split(current_dir)[-1])
+        super(UnitTestProvider, self).execute(current_dir, options, args, 'unit')
 
 class FunctionalTestProvider(TestRunnerProvider):
     def __init__(self):
         super(FunctionalTestProvider, self).__init__("func")
 
     def execute(self, current_dir, options, args):
-        tests_dir = join(current_dir, "tests", "functional")
-        self.run_nose(tests_dir, os.path.split(current_dir)[-1])
+        super(FunctionalTestProvider, self).execute(current_dir, options, args, 'functional')
 
