@@ -82,6 +82,7 @@ def test_server_should_start_with_debug():
     clear_expectations()
     server = Server(root_dir="some")
     server.context = should_start_context
+    server.context.apps = []
     server.start(config_path="config.ini")
 
     assert server.status == ServerStatus.Started
@@ -118,7 +119,7 @@ default_context.has_attr(settings=Fake('settings'))
 default_context.settings.has_attr(Ion=Fake('ion'), Db=Fake('db'))
 default_context.settings.Ion.expects('as_bool').with_args('debug').returns(False)
 
-default_context.settings.has_attr(apps=[])
+default_context.has_attr(apps=[])
 default_context.settings.Ion.has_attr(pid_file=None)
 
 default_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="10", database="database")
@@ -228,8 +229,9 @@ custom_dispatch = Fake('dispatcher').has_attr(RoutesDispatcher=Fake(callable=Tru
 def test_get_dispatcher():
     clear()
 
-    server = Server(root_dir="some", context=None)
+    server = Server(root_dir="some", context=Fake('context'))
     server.apps = []
+    server.context.apps = []
 
     routes_dispatcher.expects('connect').\
         with_args(  "media", 
