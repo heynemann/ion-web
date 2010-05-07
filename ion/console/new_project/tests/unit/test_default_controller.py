@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #-*- coding:utf-8 -*-
 
-from $project_name.controllers import *
+from $project_name.main.controllers import *
 
 def fake_render_template(self, template, *args, **kw):
     return "fake rendered text args: %s kw: %s" % (args, kw)
