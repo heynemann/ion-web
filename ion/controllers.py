@@ -65,8 +65,9 @@ def authenticated(func):
 
 class MetaController(type):
     def __init__(cls, name, bases, attrs):
-        if 'Controller' in [klass.__name__ for klass in bases]:
-            
+        if 'Controller' in globals() and \
+                        issubclass(cls, globals()['Controller']):
+
             __CONTROLLERS__.append(cls)
             __CONTROLLERSDICT__[name] = cls
             cls.__routes__ = []
