@@ -227,3 +227,5 @@ class PackageMediaProvider(Provider):
             if not exists(dirname(filename)):
                 os.makedirs(dirname(filename))
             shutil.copyfile(medias[media], filename)
+        
+        print "All files properly packaged."
