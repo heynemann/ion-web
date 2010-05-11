@@ -72,7 +72,8 @@ should_start_context.has_attr(settings=Fake('settings'))
 should_start_context.settings.has_attr(Ion=Fake('ion'), Db=Fake('db'))
 should_start_context.settings.Ion.expects('as_bool').with_args('debug').returns(True)
 should_start_context.settings.Ion.has_attr(pid_file=None)
-should_start_context.settings.has_attr(apps=[])
+should_start_context.expects('load_apps')
+should_start_context.has_attr(apps=[],app_paths=[],app_modules=[])
 should_start_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="10", database="database")
 
 @with_fakes
@@ -119,7 +120,8 @@ default_context.has_attr(settings=Fake('settings'))
 default_context.settings.has_attr(Ion=Fake('ion'), Db=Fake('db'))
 default_context.settings.Ion.expects('as_bool').with_args('debug').returns(False)
 
-default_context.has_attr(apps=[])
+default_context.expects('load_apps')
+default_context.has_attr(apps=[],app_paths=[],app_modules=[])
 default_context.settings.Ion.has_attr(pid_file=None)
 
 default_context.settings.Db.has_attr(protocol="protocol", user="user", password="password", host="host", port="10", database="database")
@@ -403,38 +405,3 @@ def test_server_imports_controllers():
     server.apps = []
 
     server.import_controllers()
-
-# @with_fakes
-# def test_server_template_path_returns_default_path_when_empty_setting():
-#     clear()
-#     fake_context = Fake('context')
-#     server = Server(root_dir="some", context=fake_context)
-#     fake_context.has_attr(settings=Fake('settings'))
-#     fake_context.settings.has_attr(Ion=Fake('Ion'))
-#     fake_context.settings.Ion.has_attr(template_path='')
-# 
-#     assert server.template_path.endswith('some/templates')
-
-# @with_fakes
-# def test_server_template_path_returns_default_path_when_slash_setting():
-#     clear()
-#     fake_context = Fake('context')
-#     server = Server(root_dir="some", context=fake_context)
-#     fake_context.has_attr(settings=Fake('settings'))
-#     fake_context.settings.has_attr(Ion=Fake('Ion'))
-#     fake_context.settings.Ion.has_attr(template_path='/')
-# 
-#     assert server.template_path.endswith('some/templates')
-
-# @with_fakes
-# def test_server_template_path_returns_default_path_when_custom_path_setting():
-#     clear()
-#     fake_context = Fake('context')
-#     server = Server(root_dir="some", context=fake_context)
-#     fake_context.has_attr(settings=Fake('settings'))
-#     fake_context.settings.has_attr(Ion=Fake('Ion'))
-#     fake_context.settings.Ion.has_attr(template_path='/some_template_path')
-# 
-#     assert server.template_path.endswith('some/some_template_path')
-
-

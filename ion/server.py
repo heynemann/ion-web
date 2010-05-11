@@ -55,16 +55,6 @@ class Server(object):
         self.test_connection_error = None
         self.cache = None
 
-    def load_apps(self):
-        self.apps = self.context.apps
-        self.app_paths = {}
-        self.app_modules = {}
-
-        for app in self.apps:
-            self.app_modules[app] = Server.imp(app)
-            app_path = dirname(inspect.getfile(self.app_modules[app]))
-            self.app_paths[app] = app_path
-
     def start(self, config_path, non_block=False):
         self.status = ServerStatus.Starting
         self.publish('on_before_server_start', {'server':self, 'context':self.context})
@@ -72,8 +62,12 @@ class Server(object):
         self.context.load_settings(abspath(join(self.root_dir, config_path)))
         self.cache = Cache(size=1000, age="5s", log=cherrypy.log)
 
-        self.load_apps()
-
+        self.context.load_apps()
+        
+        self.apps = self.context.apps
+        self.app_paths = self.context.app_paths
+        self.app_modules = self.context.app_modules
+        
         if self.context.settings.Ion.as_bool('debug'):
             logging.basicConfig()
             logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
@@ -160,19 +154,6 @@ class Server(object):
         }
 
         return conf
-
-    def list_all_media(self):
-        """docstring for list_all_media"""
-        app_media = {}
-        
-        for app_path in self.app_paths.values():
-            media_path = join(app_path, 'media')
-            for file_name in locate("*.txt", "*.py", "*.css", "*.js", "*.rst", "*.html", "*.ini", root=media_path):
-                if not is_file(file_name):
-                    continue
-                key = file_name.replace(media_path, '')
-                app_media['key'] = file_name
-        return app_media.values()
 
     def get_dispatcher(self):
         routes_dispatcher = cherrypy.dispatch.RoutesDispatcher()
