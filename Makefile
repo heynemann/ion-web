@@ -56,3 +56,5 @@ deb:
 	python -c 'import os;os.system("debuild -tc")'
 	cp ../*ion*.deb ./releases
 	mv /tmp/ion_git .git
+create_db:
+	mysql -u root < create_db.sql

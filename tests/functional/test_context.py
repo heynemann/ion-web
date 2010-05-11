@@ -15,41 +15,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import sys
 from os.path import abspath, join, dirname
 import time
 
 import ion.controllers as ctrl
 from ion import Server, ServerStatus, Context
 from ion.test_helpers import ServerHelper
-from ion.controllers import Controller, route
+from client import *
 
-from client import HttpClient
-from models import *
+root_dir = abspath(join(dirname(__file__), 'testapp'))
+sys.path.insert(0, root_dir)
+root_dir = join(root_dir, 'testapp')
 
-root_dir = abspath(dirname(__file__))
+def test_should_list_media_from_all_apps():
+    ctx = Context(root_dir)
+    ctx.load_settings(join(root_dir,'config.ini'))
+    ctx.load_apps()
+    
+    all_media = ctx.list_all_media()
+    assert '/js/readme.rst' in all_media, all_media
 
-def clear():
-    ctrl.__CONTROLLERS__ = []
-    ctrl.__CONTROLLERSDICT__ = {}
 
-def test_save_and_render_user_model():
-    clear()
+def test_media_js_retrieves_the_right_media_file():
+    ctx = Context(root_dir)
+    ctx.load_settings(join(root_dir,'config.ini'))
+    ctx.load_apps()
 
-    class TemplateFolderController(Controller):
-        @route("/")
-        def some_action(self):
-            all_users = self.store.query(User).all()
-            for user in all_users:
-                self.store.delete(user)
-            self.store.commit()
-
-            user = User("someone")
-            self.store.add(user)
-
-            return str(user)
-
-    server = ServerHelper(root_dir, 'controller_config1.ini')
-
-    exit_code, content = HttpClient.get("http://localhost:9947/")
-    assert content == "<User('someone')>"
-
+    all_media = ctx.list_all_media()
+    
+    test_file = open(all_media['/js/readme.rst'], 'r')
+    file_contents =  test_file.read()
+    assert 'main app' in file_contents, file_contents

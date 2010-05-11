@@ -140,6 +140,7 @@ def test_render_template():
     ctrl = Controller()
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
+    ctrl.server.apps = []
     ctrl.server.has_attr(template_path="some/root/templates")
     ctrl.server.template_filters = {}
     ctrl.server.has_attr(context=template_context)
@@ -165,6 +166,7 @@ def test_render_template_in_folder_without_package():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
+    ctrl.server.apps = []
     ctrl.server.template_filters = {}
     ctrl.server.context = template_context2
 
@@ -190,6 +192,7 @@ def test_render_template_in_folder_with_null_package():
     ctrl.server = Fake('server')
     ctrl.server.has_attr(root_dir="some/root")
     ctrl.server.has_attr(template_path="some/root/templates")
+    ctrl.server.apps = []
     ctrl.server.template_filters = {}
     ctrl.server.context = template_context3
     content = ctrl.render_template("some_file.html", some="args")
@@ -491,6 +494,7 @@ def test_render_template_uses_all_server_template_filters():
 
     controller = Controller()
     controller.server = fake_server
+    controller.server.apps = []
 
     result = controller.render_template("template_file")
 
