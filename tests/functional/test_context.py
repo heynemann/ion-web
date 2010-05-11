@@ -34,7 +34,7 @@ def test_should_list_media_from_all_apps():
     ctx.load_apps()
     
     all_media = ctx.list_all_media()
-    assert 'media/js/readme.rst' in all_media[0], all_media
+    assert '/js/readme.rst' in all_media, all_media
 
 
 def test_media_js_retrieves_the_right_media_file():
@@ -43,6 +43,7 @@ def test_media_js_retrieves_the_right_media_file():
     ctx.load_apps()
 
     all_media = ctx.list_all_media()
-    test_file = open(all_media[0], 'r')
+    
+    test_file = open(all_media['/js/readme.rst'], 'r')
     file_contents =  test_file.read()
     assert 'main app' in file_contents, file_contents

@@ -53,5 +53,5 @@ class Context(object):
                 if not is_file(file_name):
                     continue
                 key = file_name.replace(media_path, '')
-                app_media['key'] = file_name
-        return app_media.values()
+                app_media[key] = file_name
+        return app_media

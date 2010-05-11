@@ -17,9 +17,10 @@
 
 import sys
 import os
-from os.path import join, dirname, abspath, exists
+from os.path import join, dirname, abspath, exists, split
 from string import Template
 import inspect
+import shutil
 
 from ion.server import Server
 from ion.fs import *
@@ -192,3 +193,37 @@ class FunctionalTestProvider(TestRunnerProvider):
     def execute(self, current_dir, options, args):
         super(FunctionalTestProvider, self).execute(current_dir, options, args, 'functional')
 
+class PackageMediaProvider(Provider):
+    def __init__(self):
+        super(PackageMediaProvider, self).__init__("package_media")
+
+    def execute(self, current_dir, options, args):
+        if not args:
+            msg = 'You must specify the path to drop the files at' + \
+                  ' as an argument.'
+            raise RuntimeError(msg)
+
+        target_dir = args[0]
+
+        ini_files = locate("config.ini", root=current_dir)
+
+        if not ini_files:
+            raise RuntimeError("No files called config.ini were found" + \
+                               "in the current directory structure")
+
+        root_dir = abspath(dirname(ini_files[0]))
+
+        context = Context(root_dir)
+        context.load_settings(ini_files[0])
+        context.load_apps()
+        
+        medias = context.list_all_media()
+        
+        if not exists(target_dir):
+            os.mkdir(target_dir)
+        
+        for media in medias.keys():
+            filename = join(target_dir, media.strip("/"))
+            if not exists(dirname(filename)):
+                os.makedirs(dirname(filename))
+            shutil.copyfile(medias[media], filename)
