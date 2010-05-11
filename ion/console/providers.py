@@ -167,6 +167,11 @@ class TestRunnerProvider(Provider):
         tests_dirs = []
         for app in context.apps:
             module = imp(app)
+
+            if not module:
+                log('Cannot import module [%s]' % app)
+                sys.exit(0)
+
             module_path = dirname(inspect.getfile(module))
             
             if complement_dir:

@@ -18,6 +18,8 @@
 import inspect
 from os.path import join, dirname, splitext, split, exists
 
+import cherrypy
+
 from bus import Bus
 from settings import Settings
 from fs import imp, locate, is_file
@@ -39,7 +41,12 @@ class Context(object):
         self.app_modules = {}
 
         for app in self.apps:
-            self.app_modules[app] = imp(app)
+            module = imp(app)
+            if not module:
+                cherrypy.log.error('Cannot import module from %s.' % app, 'Server')
+                sys.exit(0)
+
+            self.app_modules[app] = module
             app_path = dirname(inspect.getfile(self.app_modules[app]))
             self.app_paths[app] = app_path
 
