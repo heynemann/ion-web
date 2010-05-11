@@ -149,7 +149,7 @@ class Controller(object):
 
         app_loaders = []
 
-        for app in apps:
+        for app in reversed(apps):
             app_loaders.append(PackageLoader(app))
 
         loader = ChoiceLoader(app_loaders)

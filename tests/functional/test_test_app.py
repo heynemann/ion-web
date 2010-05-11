@@ -35,7 +35,7 @@ def test_index_action_returns_overriden_template():
     try:
         exit_code, content = HttpClient.get('http://localhost:8082/')
         assert exit_code == 200
-        assert "TEMPLATE OVERRIDING WORKS" in content
+        assert "Ptufl" in content
 
     finally:
         server.stop()
