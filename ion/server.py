@@ -29,6 +29,7 @@ from sqlalchemy_tool import metadata, session, mapper, configure_session_for_app
 from ion.context import Context
 from ion.cache import Cache
 from ion.fs import imp as import_module
+from ion.fs import locate, is_file
 from sqlalchemy.exc import DBAPIError
 import logging
 
@@ -159,6 +160,19 @@ class Server(object):
         }
 
         return conf
+
+    def list_all_media(self):
+        """docstring for list_all_media"""
+        app_media = {}
+        
+        for app_path in self.app_paths.values():
+            media_path = join(app_path, 'media')
+            for file_name in locate("*.txt", "*.py", "*.css", "*.js", "*.rst", "*.html", "*.ini", root=media_path):
+                if not is_file(file_name):
+                    continue
+                key = file_name.replace(media_path, '')
+                app_media['key'] = file_name
+        return app_media.values()
 
     def get_dispatcher(self):
         routes_dispatcher = cherrypy.dispatch.RoutesDispatcher()

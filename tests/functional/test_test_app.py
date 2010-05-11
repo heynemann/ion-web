@@ -61,3 +61,23 @@ def test_template_filter_for_custom_app_is_loaded():
             "Should contain the text 'Hello Claudio'"
     finally:
         server.stop()
+
+def test_should_list_media_from_all_apps():
+    server = ServerHelper(root_dir, 'config.ini')
+
+    try:
+        all_media = server.server.list_all_media()
+        assert 'media/js/readme.rst' in all_media[0], all_media
+    finally:
+        server.stop()
+
+def test_media_js_retrieves_the_right_media_file():
+    server = ServerHelper(root_dir, 'config.ini')
+
+    try:
+        all_media = server.server.list_all_media()
+        test_file = open(all_media[0], 'r')
+        file_contents =  test_file.read()
+        assert 'main app' in file_contents, file_contents
+    finally:
+        server.stop()
