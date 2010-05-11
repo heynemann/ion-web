@@ -15,5 +15,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def test_can_pack_media_to_a_given_folder():
-    pass
+
+import sys
+import os
+from os.path import abspath, join, dirname, exists
+import time
+import shutil
+
+import ion.controllers as ctrl
+from ion import Server, ServerStatus, Context
+from ion.console.providers import PackageMediaProvider
+from ion.test_helpers import ServerHelper
+from client import *
+
+root_dir = abspath(join(dirname(__file__), 'testapp'))
+sys.path.insert(0, root_dir)
+root_dir = join(root_dir, 'testapp')
+
+def test_packing_media_works():
+    dir_path = abspath(join(os.curdir, 'testbuild'))
+    if not exists(dir_path):
+        os.mkdir(dir_path)
+    try:
+        prov = PackageMediaProvider()
+
+        prov.execute(root_dir, None, [dir_path])
+
+        assert exists(join(dir_path, 'js/readme.rst'))
+    finally:
+        shutil.rmtree(dir_path)
