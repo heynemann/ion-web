@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-Version="0.6.1"
+Version="0.6.2"
 version = Version
 __version__ = Version
 
