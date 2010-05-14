@@ -16,6 +16,7 @@
 # limitations under the License.
 
 import inspect
+import sys
 from os.path import join, dirname, splitext, split, exists
 
 import cherrypy
