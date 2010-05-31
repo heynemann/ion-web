@@ -165,7 +165,7 @@ class Server(object):
             def serve_media(self, media_url):
                 for app in self.apps:
                     extension = splitext(media_url)[-1]
-                    app_module = reduce(getattr, app.split('.')[1:], __import__('testapp'))
+                    app_module = reduce(getattr, app.split('.')[1:], __import__(app))
                     path = inspect.getfile(app_module)
                     media_path = abspath(join("/".join(split(path)[:-1]), 'media', media_url))
 
