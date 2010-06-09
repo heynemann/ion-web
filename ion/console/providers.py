@@ -161,9 +161,14 @@ class TestRunnerProvider(Provider):
             raise RuntimeError('Could not find config.ini file in this project, thus can\'t run unit tests')
         config_file = config_file[0]
 
-        context = Context(dirname(config_file))
+        root_dir = dirname(config_file)
+        
+        context = Context(root_dir)
         context.load_settings('config.ini')
 
+        sys.path.append(os.curdir)
+        sys.path.append(root_dir)
+        
         tests_dirs = []
         for app in context.apps:
             module = imp(app)
