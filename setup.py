@@ -48,7 +48,7 @@ setup(
     install_requires=[
         "CherryPy",
         "jinja2",
-        "SQLAlchemy",
+        "SQLAlchemy==0.5.8",
         "routes",
         "nose"
     ],
