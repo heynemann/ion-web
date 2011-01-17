@@ -15,12 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ion import Version
-from setuptools import setup, find_packages
+from setuptools import setup
+
+version = open('ion/version.txt').read()
 
 setup(
     name = 'Ion',
-    version = Version,
+    version = version,
     description = "Ion is an MVC Web Framework",
     long_description = """Ion is an MVC Web Framework.""",
     keywords = 'MVC Web Framework',
@@ -45,9 +46,9 @@ setup(
         '': ['*.py'],
     },
     install_requires=[
-        "cherrypy",
+        "CherryPy",
         "jinja2",
-        "sqlalchemy",
+        "SQLAlchemy",
         "routes",
         "nose"
     ],

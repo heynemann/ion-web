@@ -15,7 +15,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-Version="0.6.4"
+from os.path import dirname, abspath, join
+
+def LOCAL_FILE(*x):
+    return abspath(join(dirname(__file__), *x))
+
+path_file_version =  LOCAL_FILE('version.txt')
+Version=open(path_file_version).read()
 version = Version
 __version__ = Version
 

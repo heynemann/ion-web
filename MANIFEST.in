@@ -1,9 +1,1 @@
-prune dist
-prune build
-recursive-include ion *.txt
-recursive-include ion *.html
-recursive-include ion *.htm
-recursive-include ion *.rst
-recursive-include ion *.py
-recursive-include ion *.ini
-
+recursive-include ion  *.conf *.css *.gif *.html *.ico *.jpg *.js *.json  *.png *.swf *.txt *.xml
