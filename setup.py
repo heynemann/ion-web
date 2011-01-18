@@ -17,7 +17,7 @@
 
 from setuptools import setup
 
-version = open('ion/version.txt').read()
+version = open('ion/version.txt').read().strip()
 
 setup(
     name = 'Ion',

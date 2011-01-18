@@ -21,7 +21,7 @@ def LOCAL_FILE(*x):
     return abspath(join(dirname(__file__), *x))
 
 path_file_version =  LOCAL_FILE('version.txt')
-Version=open(path_file_version).read()
+Version=open(path_file_version).read().strip()
 version = Version
 __version__ = Version
 
