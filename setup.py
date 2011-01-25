@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 version = open('ion/version.txt').read().strip()
 
@@ -37,7 +37,7 @@ setup(
                    'Operating System :: Microsoft :: Windows',
                    'Operating System :: POSIX :: Linux',
                    'Programming Language :: Python :: 2.6',],
-    packages = ['ion'],
+    packages = find_packages(exclude=['tests*']),
     include_package_data=True,
     package_data = {
         '': ['*.txt'],
