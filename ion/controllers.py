@@ -91,8 +91,8 @@ class Controller(object):
     __metaclass__ = MetaController
     __routes__ = None
 
-    def __init__(self):
-        self.server = None
+    def __init__(self, server=None):
+        self.server = server
 
     def log(self, message):
         if self.settings.Ion.as_bool('verbose'):

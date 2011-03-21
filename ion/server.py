@@ -190,8 +190,7 @@ class Server(object):
                 raise cherrypy.HTTPError(404)
 
         for controller_type in Controller.all():
-            controller = controller_type()
-            controller.server = self
+            controller = controller_type(server=self)
             controller.register_routes(routes_dispatcher)
 
         media_controller = MediaController(self.apps)
